@@ -34,7 +34,10 @@ func ConnectDB(ctx context.Context, uri string) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	// TODO: Ping?
+	err = db.client.Ping(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
 	db.rooms = db.client.Database(dbname).Collection("rooms")
 	db.posts = db.client.Database(dbname).Collection("posts")
 	return db, nil

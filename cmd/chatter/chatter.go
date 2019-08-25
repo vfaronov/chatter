@@ -22,6 +22,7 @@ func main() {
 	}
 	svr := web.NewServer(webAddr, db)
 
+	log.Printf("starting server on %v", webAddr)
 	err = svr.ListenAndServe()
 	log.Fatalf("shutting down: %v", err)
 }
