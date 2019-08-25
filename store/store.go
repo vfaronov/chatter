@@ -12,7 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func ConnectDB(uri string) (*DB, error) {
+func ConnectDB(ctx context.Context, uri string) (*DB, error) {
 	// MongoDB's connection string URIs include database name:
 	// https://docs.mongodb.com/manual/reference/connection-string/ --
 	// but the driver only uses it for authentication. To avoid duplicating
@@ -28,7 +28,7 @@ func ConnectDB(uri string) (*DB, error) {
 
 	log.Printf("store: connecting to %v", uri)
 	db := &DB{}
-	db.client, err = mongo.Connect(context.TODO(), options.Client().
+	db.client, err = mongo.Connect(ctx, options.Client().
 		ApplyURI(uri).
 		SetAppName("chatter"))
 	if err != nil {

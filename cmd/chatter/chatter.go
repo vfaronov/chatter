@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 
@@ -15,7 +16,7 @@ func main() {
 	flag.StringVar(&webAddr, "web-addr", "localhost:10242", "")
 	flag.Parse()
 
-	db, err := store.ConnectDB(storeURI)
+	db, err := store.ConnectDB(context.Background(), storeURI)
 	if err != nil {
 		log.Fatalf("cannot connect to storage DB: %v", err)
 	}
