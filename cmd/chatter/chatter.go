@@ -10,7 +10,7 @@ import (
 
 func main() {
 	var storeURI string
-	flag.StringVar(&storeURI, "store-uri", "mongodb://localhost:27017", "")
+	flag.StringVar(&storeURI, "store-uri", "mongodb://localhost:27017/chatter", "")
 	var webAddr string
 	flag.StringVar(&webAddr, "web-addr", "localhost:10242", "")
 	flag.Parse()
