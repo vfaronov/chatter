@@ -28,7 +28,9 @@ func ConnectDB(uri string) (*DB, error) {
 
 	log.Printf("store: connecting to %v", uri)
 	db := &DB{}
-	db.client, err = mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
+	db.client, err = mongo.Connect(context.TODO(), options.Client().
+		ApplyURI(uri).
+		SetAppName("chatter"))
 	if err != nil {
 		return nil, err
 	}
