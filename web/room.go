@@ -40,11 +40,6 @@ func (s *Server) postRoom(w http.ResponseWriter, r *http.Request, ps httprouter.
 		http.Error(w, "no such room", http.StatusNotFound)
 		return
 	}
-	if _, err := s.db.GetRoom(ctx, id); err == store.NotFound {
-		http.Error(w, "no such room", http.StatusNotFound)
-		return
-	}
-
 	author, _, ok := r.BasicAuth()
 	if !ok {
 		w.Header().Set("Www-Authenticate", `Basic realm="chatter"`)
@@ -64,6 +59,10 @@ func (s *Server) postRoom(w http.ResponseWriter, r *http.Request, ps httprouter.
 
 	post := store.Post{RoomID: id, Author: author, Text: text}
 	err = s.db.AddPost(ctx, post)
+	if err == store.NotFound {
+		http.Error(w, "no such room", http.StatusNotFound)
+		return
+	}
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

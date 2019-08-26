@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -9,10 +10,12 @@ import (
 )
 
 type Room struct {
-	Title string
+	Title   string
+	Updated time.Time
 }
 
 func (db *DB) CreateRoom(ctx context.Context, room Room) (primitive.ObjectID, error) {
+	room.Updated = time.Now()
 	res, err := db.rooms.InsertOne(ctx, room)
 	if err != nil {
 		return primitive.NilObjectID, err

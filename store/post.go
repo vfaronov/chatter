@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -10,11 +11,21 @@ import (
 type Post struct {
 	RoomID primitive.ObjectID
 	Author string
+	Time   time.Time
 	Text   string
 }
 
 func (db *DB) AddPost(ctx context.Context, post Post) error {
-	_, err := db.posts.InsertOne(ctx, post)
+	post.Time = time.Now()
+	res, err := db.rooms.UpdateOne(ctx, bson.M{"_id": post.RoomID},
+		bson.M{"$set": bson.M{"updated": post.Time}})
+	if err != nil {
+		return err
+	}
+	if res.ModifiedCount < 1 {
+		return NotFound
+	}
+	_, err = db.posts.InsertOne(ctx, post)
 	return err
 }
 
