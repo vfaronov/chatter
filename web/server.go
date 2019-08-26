@@ -16,6 +16,7 @@ func NewServer(addr string, db *store.DB) *Server {
 		},
 		db: db,
 	}
+	r.GET("/", s.getIndex)
 	r.POST("/", s.postIndex)
 	r.GET("/:id", s.getRoom)
 	r.POST("/:id", s.postRoom)
