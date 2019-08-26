@@ -24,10 +24,7 @@ func (db *DB) GetRoom(ctx context.Context, id primitive.ObjectID) (Room, error) 
 	var room Room
 	err := db.rooms.FindOne(ctx, bson.M{"_id": id}).Decode(&room)
 	if err == mongo.ErrNoDocuments {
-		return room, NotFound
+		err = NotFound
 	}
-	if err != nil {
-		return room, err
-	}
-	return room, nil
+	return room, err
 }
