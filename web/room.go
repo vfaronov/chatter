@@ -49,7 +49,7 @@ func (s *Server) postRoom(w http.ResponseWriter, r *http.Request, room *store.Ro
 		return
 	}
 
-	post := store.Post{
+	post := &store.Post{
 		RoomID: room.ID,
 		Author: s.mustUser(r),
 		Text:   r.Form.Get("text"),
@@ -59,7 +59,7 @@ func (s *Server) postRoom(w http.ResponseWriter, r *http.Request, room *store.Ro
 		return
 	}
 
-	if err := s.db.AddPost(r.Context(), post); err != nil {
+	if err := s.db.CreatePost(r.Context(), post); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
