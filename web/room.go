@@ -9,65 +9,67 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func (s *Server) getRoom(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	ctx := r.Context()
-	id, err := primitive.ObjectIDFromHex(ps.ByName("id"))
-	if err != nil {
-		http.Error(w, "no such room", http.StatusNotFound)
-		return
+func (s *Server) withRoom(
+	next func(w http.ResponseWriter, r *http.Request, room *store.Room),
+) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		id, err := primitive.ObjectIDFromHex(ps.ByName("roomID"))
+		if err != nil {
+			http.Error(w, "no such room", http.StatusNotFound)
+			return
+		}
+		room, err := s.db.GetRoom(r.Context(), id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if room == nil {
+			http.Error(w, "no such room", http.StatusNotFound)
+			return
+		}
+		next(w, r, room)
 	}
-	if _, err := s.db.GetRoom(ctx, id); err == store.NotFound {
-		http.Error(w, "no such room", http.StatusNotFound)
-		return
-	}
+}
 
-	posts, err := s.db.GetPosts(ctx, id)
+func (s *Server) getRoom(w http.ResponseWriter, r *http.Request, room *store.Room) {
+	posts, err := s.db.GetPosts(r.Context(), room.ID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	for _, post := range posts {
 		fmt.Fprint(w, post.Author, ": ", post.Text, "\r\n")
 	}
 }
 
-func (s *Server) postRoom(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	ctx := r.Context()
-	id, err := primitive.ObjectIDFromHex(ps.ByName("id"))
-	if err != nil {
-		http.Error(w, "no such room", http.StatusNotFound)
-		return
-	}
+func (s *Server) postRoom(w http.ResponseWriter, r *http.Request, room *store.Room) {
 	author, _, ok := r.BasicAuth()
 	if !ok {
 		w.Header().Set("Www-Authenticate", `Basic realm="chatter"`)
 		http.Error(w, "need authentication", http.StatusUnauthorized)
 		return
 	}
-
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, fmt.Sprintf("bad form: %s", err), http.StatusBadRequest)
 		return
 	}
-	text := r.Form.Get("text")
-	if text == "" {
+
+	post := store.Post{
+		RoomID: room.ID,
+		Author: author,
+		Text:   r.Form.Get("text"),
+	}
+	if post.Text == "" {
 		http.Error(w, "text required", http.StatusUnprocessableEntity)
 		return
 	}
 
-	post := store.Post{RoomID: id, Author: author, Text: text}
-	err = s.db.AddPost(ctx, post)
-	if err == store.NotFound {
-		http.Error(w, "no such room", http.StatusNotFound)
-		return
-	}
-	if err != nil {
+	if err := s.db.AddPost(r.Context(), post); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Location", r.URL.String())
-	s.getRoom(w, r, ps)
+	s.getRoom(w, r, room)
 }

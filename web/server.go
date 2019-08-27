@@ -16,10 +16,10 @@ func NewServer(addr string, db *store.DB) *Server {
 		},
 		db: db,
 	}
-	r.GET("/", s.getIndex)
-	r.POST("/", s.postIndex)
-	r.GET("/:id", s.getRoom)
-	r.POST("/:id", s.postRoom)
+	r.GET("/rooms/", s.getRooms)
+	r.POST("/rooms/", s.postRooms)
+	r.GET("/rooms/:roomID", s.withRoom(s.getRoom))
+	r.POST("/rooms/:roomID", s.withRoom(s.postRoom))
 	return s
 }
 

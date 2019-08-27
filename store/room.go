@@ -11,39 +11,42 @@ import (
 )
 
 type Room struct {
+	ID      primitive.ObjectID `bson:"_id,omitempty"`
 	Title   string
 	Updated time.Time
 }
 
-func (db *DB) CreateRoom(ctx context.Context, room Room) (primitive.ObjectID, error) {
+func (db *DB) CreateRoom(ctx context.Context, room *Room) error {
+	room.ID = primitive.NilObjectID
 	room.Updated = time.Now()
 	res, err := db.rooms.InsertOne(ctx, room)
 	if err != nil {
-		return primitive.NilObjectID, err
+		return err
 	}
-	return res.InsertedID.(primitive.ObjectID), nil
+	room.ID = res.InsertedID.(primitive.ObjectID)
+	return nil
 }
 
-func (db *DB) GetRoom(ctx context.Context, id primitive.ObjectID) (Room, error) {
-	var room Room
-	err := db.rooms.FindOne(ctx, bson.M{"_id": id}).Decode(&room)
+func (db *DB) GetRoom(ctx context.Context, id primitive.ObjectID) (*Room, error) {
+	room := &Room{}
+	err := db.rooms.FindOne(ctx, bson.M{"_id": id}).Decode(room)
 	if err == mongo.ErrNoDocuments {
-		err = NotFound
+		return nil, nil
 	}
 	return room, err
 }
 
-func (db *DB) GetRooms(ctx context.Context) ([]Room, error) {
+func (db *DB) GetRooms(ctx context.Context) ([]*Room, error) {
 	cur, err := db.rooms.Find(ctx, bson.M{},
 		options.Find().SetSort(bson.M{"updated": -1}))
 	if err != nil {
 		return nil, err
 	}
 	defer cur.Close(ctx)
-	var rooms []Room
+	var rooms []*Room
 	for cur.Next(ctx) {
-		var room Room
-		err = cur.Decode(&room)
+		room := &Room{}
+		err = cur.Decode(room)
 		if err != nil {
 			return rooms, err
 		}
