@@ -44,12 +44,6 @@ func (s *Server) getRoom(w http.ResponseWriter, r *http.Request, room *store.Roo
 }
 
 func (s *Server) postRoom(w http.ResponseWriter, r *http.Request, room *store.Room) {
-	author, _, ok := r.BasicAuth()
-	if !ok {
-		w.Header().Set("Www-Authenticate", `Basic realm="chatter"`)
-		http.Error(w, "need authentication", http.StatusUnauthorized)
-		return
-	}
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, fmt.Sprintf("bad form: %s", err), http.StatusBadRequest)
 		return
@@ -57,7 +51,7 @@ func (s *Server) postRoom(w http.ResponseWriter, r *http.Request, room *store.Ro
 
 	post := store.Post{
 		RoomID: room.ID,
-		Author: author,
+		Author: s.mustUser(r),
 		Text:   r.Form.Get("text"),
 	}
 	if post.Text == "" {
