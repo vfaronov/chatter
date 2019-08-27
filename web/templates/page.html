@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+
+<html>
+
+  <head>
+    <title>{{block "title" .}}Chatter{{end}}</title>
+    <meta name=charset value=utf8>
+  </head>
+
+  <body>
+    <h1>{{template "title"}}</h1>
+    {{block "body" .}}{{end}}
+  </body>
+
+</html>

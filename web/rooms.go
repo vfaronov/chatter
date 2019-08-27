@@ -2,11 +2,17 @@ package web
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
-	"net/url"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/vfaronov/chatter/store"
+)
+
+var (
+	roomsTpl = template.Must(template.ParseFiles(
+		"web/templates/page.html",
+		"web/templates/rooms.html"))
 )
 
 func (s *Server) getRooms(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -15,11 +21,8 @@ func (s *Server) getRooms(w http.ResponseWriter, r *http.Request, ps httprouter.
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	w.Header().Set("Content-Type", "text/plain")
-	for _, room := range rooms {
-		fmt.Fprintf(w, "%s\t[updated %s]\n", room.Title, room.Updated)
-	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	_ = roomsTpl.Execute(w, rooms)
 }
 
 func (s *Server) postRooms(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -37,10 +40,5 @@ func (s *Server) postRooms(w http.ResponseWriter, r *http.Request, ps httprouter
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	loc := &url.URL{Path: room.ID.Hex()}
-	w.Header().Set("Content-Type", "text/plain")
-	w.Header().Set("Location", loc.String())
-	w.WriteHeader(http.StatusCreated)
-	fmt.Fprint(w, "See: ", r.URL.ResolveReference(loc), "\r\n")
+	http.Redirect(w, r, room.ID.Hex(), http.StatusSeeOther)
 }

@@ -1,0 +1,18 @@
+{{define "title"}}{{.Room.Title}}{{end}}
+
+{{define "body"}}
+{{range .Posts}}
+<div class=post>
+  <span class=author>{{.Author}}</span>
+  <span class=time>{{.Time}}</span>
+  <p>{{.Text}}</p>
+</div>
+{{end}}
+
+<form method=post>
+  <p>
+    <textarea name=text></textarea>
+    <input type=submit>
+  </p>
+</form>
+{{end}}

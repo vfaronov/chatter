@@ -1,0 +1,20 @@
+{{define "bodyclass"}}rooms{{end}}
+
+{{define "body"}}
+<ul class=rooms>
+  {{range .}}
+  <li>
+    <a href="{{.ID.Hex}}">{{.Title}}</a>
+    updated {{.Updated}}
+  </li>
+  {{end}}
+</ul>
+
+<h2>Start new room</h2>
+<form method=post>
+  <p>
+    <label>Title: <input name=title></label>
+    <input type=submit>
+  </p>
+</form>
+{{end}}

@@ -2,11 +2,18 @@ package web
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/vfaronov/chatter/store"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
+var (
+	roomTpl = template.Must(template.ParseFiles(
+		"web/templates/page.html",
+		"web/templates/room.html"))
 )
 
 func (s *Server) withRoom(
@@ -37,10 +44,11 @@ func (s *Server) getRoom(w http.ResponseWriter, r *http.Request, room *store.Roo
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	for _, post := range posts {
-		fmt.Fprint(w, post.Author, ": ", post.Text, "\r\n")
-	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	_ = roomTpl.Execute(w, struct {
+		Room  *store.Room
+		Posts []*store.Post
+	}{room, posts})
 }
 
 func (s *Server) postRoom(w http.ResponseWriter, r *http.Request, room *store.Room) {
@@ -64,6 +72,5 @@ func (s *Server) postRoom(w http.ResponseWriter, r *http.Request, room *store.Ro
 		return
 	}
 
-	w.Header().Set("Content-Location", r.URL.String())
-	s.getRoom(w, r, room)
+	http.Redirect(w, r, r.URL.String(), http.StatusSeeOther)
 }
