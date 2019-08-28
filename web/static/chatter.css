@@ -1,0 +1,59 @@
+body {
+    background-color: #ffffff;
+    color: #111111;
+    font-family: sans-serif;
+    padding: 2em;
+    margin: 0 auto;
+    max-width: 60em;
+}
+
+a:link, a:active, a:visited {
+    color: #3465a4;
+}
+
+ul.rooms {
+    padding-left: 0;
+}
+
+ul.rooms > li {
+    list-style-type: none;
+    margin-top: 0.5em;
+}
+
+.post {
+    background-color: #f7fafc;
+    border: solid 1px #ebebeb;
+    padding: 0.5em;
+    width: max-content;
+    max-width: 100%;
+}
+
+.post + .post {
+    margin-top: 1em;
+}
+
+.post p {
+    clear: both;
+    margin: 0.3em 0 0 0;
+    width: max-content;
+    max-width: 100%;
+}
+
+.post .author {
+    font-weight: bold;
+}
+
+.post .time {
+    color: #555555;
+    float: right;
+    margin-left: 1em;
+}
+
+form.post input[type=submit] {
+    float: right;
+    margin-left: 0.5em;
+}
+
+form.post textarea {
+    width: 30em;
+}

@@ -14,6 +14,7 @@ func NewServer(addr string, db *store.DB) *Server {
 	}
 
 	r := httprouter.New()
+	r.GET("/chatter.css", s.static("chatter.css"))
 	r.GET("/rooms/", s.getRooms)
 	r.POST("/rooms/", s.postRooms)
 	r.GET("/rooms/:roomID", s.withRoom(s.getRoom))
@@ -27,6 +28,13 @@ func NewServer(addr string, db *store.DB) *Server {
 type Server struct {
 	*http.Server
 	db *store.DB
+}
+
+func (s *Server) static(basename string) httprouter.Handle {
+	name := "web/static/" + basename
+	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		http.ServeFile(w, r, name)
+	}
 }
 
 // Private context keys.

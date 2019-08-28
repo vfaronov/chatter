@@ -1,18 +1,24 @@
 {{define "title"}}{{.Room.Title}}{{end}}
 
+{{define "nav"}}
+<nav>
+  <p><a href=".">← all rooms</a></p>
+</nav>
+{{end}}
+
 {{define "body"}}
 {{range .Posts}}
 <div class=post>
   <span class=author>{{.Author}}</span>
-  <span class=time>{{.Time}}</span>
+  <span class=time>{{.Time.Format "2006 Jan 2 15:04"}}</span>
   <p>{{.Text}}</p>
 </div>
 {{end}}
 
-<form method=post>
-  <p>
-    <textarea name=text></textarea>
-    <input type=submit>
-  </p>
+<form class=post method=post>
+  <div>
+    <textarea name=text required></textarea>
+    <input type=submit value=Post>
+  </div>
 </form>
 {{end}}
