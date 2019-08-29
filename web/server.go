@@ -17,9 +17,9 @@ func NewServer(addr string, db *store.DB) *Server {
 	r.GET("/chatter.css", s.static("chatter.css"))
 	r.GET("/rooms/", s.getRooms)
 	r.POST("/rooms/", s.postRooms)
-	r.GET("/rooms/:roomID", s.withRoom(s.getRoom))
-	r.POST("/rooms/:roomID", s.needAuth(s.withRoom(s.postRoom)))
-	r.GET("/rooms/:roomID/updates", s.withRoom(s.getRoomUpdates))
+	r.GET("/rooms/:roomID/", s.withRoom(s.getRoom))
+	r.POST("/rooms/:roomID/", s.needAuth(s.withRoom(s.postRoom)))
+	r.GET("/rooms/:roomID/updates/", s.withRoom(s.getRoomUpdates))
 
 	s.Server.Handler = s.withAuth(r)
 

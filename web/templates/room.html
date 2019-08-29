@@ -2,12 +2,12 @@
 
 {{define "nav"}}
 <nav>
-  <p><a href=".">← all rooms</a></p>
+  <p><a href="../">← all rooms</a></p>
 </nav>
 {{end}}
 
 {{define "body"}}
-<div ic-sse-src="{{.Room.ID.Hex}}/updates" ic-swap-style=append>
+<div ic-sse-src="updates/" ic-swap-style=append>
   {{range .Posts}}{{template "post" .}}{{end}}
 </div>
   

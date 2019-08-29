@@ -2,7 +2,7 @@
 <ul class=rooms>
   {{range .}}
   <li>
-    <a href="{{.ID.Hex}}">{{.Title}}</a>
+    <a href="{{.ID.Hex}}/">{{.Title}}</a>
     updated {{.Updated.Format "2006 Jan 2 15:04"}}
   </li>
   {{end}}
