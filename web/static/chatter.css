@@ -28,7 +28,7 @@ ul.rooms > li {
     max-width: 100%;
 }
 
-.post + .post {
+.post {
     margin-top: 1em;
 }
 

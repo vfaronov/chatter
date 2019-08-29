@@ -3,6 +3,7 @@ package web
 import (
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -13,7 +14,9 @@ import (
 var (
 	roomTpl = template.Must(template.ParseFiles(
 		"web/templates/page.html",
-		"web/templates/room.html"))
+		"web/templates/room.html",
+		"web/templates/post.html",
+	))
 )
 
 func (s *Server) withRoom(
@@ -45,10 +48,13 @@ func (s *Server) getRoom(w http.ResponseWriter, r *http.Request, room *store.Roo
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	_ = roomTpl.Execute(w, struct {
+	err = roomTpl.Execute(w, struct {
 		Room  *store.Room
 		Posts []*store.Post
 	}{room, posts})
+	if err != nil {
+		log.Printf("cannot render room: %v", err)
+	}
 }
 
 func (s *Server) postRoom(w http.ResponseWriter, r *http.Request, room *store.Room) {

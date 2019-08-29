@@ -7,14 +7,10 @@
 {{end}}
 
 {{define "body"}}
-{{range .Posts}}
-<div class=post>
-  <span class=author>{{.Author}}</span>
-  <span class=time>{{.Time.Format "2006 Jan 2 15:04"}}</span>
-  <p>{{.Text}}</p>
+<div ic-sse-src="{{.Room.ID.Hex}}/updates" ic-swap-style=append>
+  {{range .Posts}}{{template "post" .}}{{end}}
 </div>
-{{end}}
-
+  
 <form class=post method=post>
   <div>
     <textarea name=text required></textarea>
