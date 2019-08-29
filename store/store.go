@@ -40,6 +40,11 @@ func ConnectDB(ctx context.Context, uri string) (*DB, error) {
 	}
 	db.rooms = db.client.Database(dbname).Collection("rooms")
 	db.posts = db.client.Database(dbname).Collection("posts")
+
+	db.listeners = make(map[chan *Post]listener)
+	db.attach = make(chan listener, 1024)
+	go db.runPump(ctx)
+
 	return db, nil
 }
 
@@ -47,6 +52,9 @@ type DB struct {
 	client *mongo.Client
 	rooms  *mongo.Collection
 	posts  *mongo.Collection
+
+	listeners map[chan *Post]listener
+	attach    chan listener
 }
 
 var NotFound = errors.New("not found")
