@@ -7,7 +7,8 @@
 {{end}}
 
 {{define "body"}}
-<div ic-sse-src="updates/" ic-swap-style=append>
+<div ic-sse-src="updates/?since={{.LastPost.Serial}}"
+     ic-swap-style=append>
   {{range .Posts}}{{template "post" .}}{{end}}
 </div>
   

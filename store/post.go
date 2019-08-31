@@ -56,8 +56,21 @@ func (db *DB) CreatePost(ctx context.Context, post *Post) error {
 	return nil
 }
 
-func (db *DB) GetPosts(ctx context.Context, roomID primitive.ObjectID) ([]*Post, error) {
-	cur, err := db.posts.Find(ctx, bson.M{"room_id": roomID})
+func (db *DB) GetPosts(
+	ctx context.Context, roomID primitive.ObjectID,
+	since, before uint32,
+) ([]*Post, error) {
+	filter := bson.M{"room_id": roomID}
+	if since > 0 {
+		filter["serial"] = bson.M{"$gt": since}
+	}
+	if before > 0 {
+		filter["before"] = bson.M{"$lt": before}
+	}
+	cur, err := db.posts.Find(ctx,
+		filter,
+		options.Find().SetSort(bson.M{"serial": 1}),
+	)
 	if err != nil {
 		return nil, err
 	}

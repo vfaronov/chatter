@@ -42,16 +42,21 @@ func (s *Server) withRoom(
 }
 
 func (s *Server) getRoom(w http.ResponseWriter, r *http.Request, room *store.Room) {
-	posts, err := s.db.GetPosts(r.Context(), room.ID)
+	posts, err := s.db.GetPosts(r.Context(), room.ID, 0, 0)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	err = roomTpl.Execute(w, struct {
-		Room  *store.Room
-		Posts []*store.Post
-	}{room, posts})
+		Room     *store.Room
+		Posts    []*store.Post
+		LastPost *store.Post
+	}{
+		Room:     room,
+		Posts:    posts,
+		LastPost: last(posts),
+	})
 	if err != nil {
 		log.Printf("cannot render room: %v", err)
 	}
@@ -79,4 +84,11 @@ func (s *Server) postRoom(w http.ResponseWriter, r *http.Request, room *store.Ro
 	}
 
 	http.Redirect(w, r, r.URL.String(), http.StatusSeeOther)
+}
+
+func last(posts []*store.Post) *store.Post {
+	if len(posts) == 0 {
+		return &store.Post{}
+	}
+	return posts[len(posts)-1]
 }
