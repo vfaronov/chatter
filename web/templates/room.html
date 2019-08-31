@@ -11,8 +11,9 @@
      ic-swap-style=append>
   {{range .Posts}}{{template "post" .}}{{end}}
 </div>
-  
-<form class=post method=post>
+
+<form id=newpost class=post method=post
+      ic-post-to="." ic-on-success="document.forms.newpost.reset()">
   <div>
     <textarea name=text required></textarea>
     <input type=submit value=Post>

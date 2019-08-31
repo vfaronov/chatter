@@ -38,6 +38,10 @@ func (s *Server) static(basename string) httprouter.Handle {
 	}
 }
 
+func isXHR(r *http.Request) bool {
+	return r.Header.Get("X-Requested-With") == "XMLHttpRequest"
+}
+
 // Private context keys.
 type key int
 

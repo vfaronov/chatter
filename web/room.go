@@ -83,7 +83,11 @@ func (s *Server) postRoom(w http.ResponseWriter, r *http.Request, room *store.Ro
 		return
 	}
 
-	http.Redirect(w, r, r.URL.String(), http.StatusSeeOther)
+	if isXHR(r) {
+		w.WriteHeader(http.StatusResetContent)
+	} else {
+		http.Redirect(w, r, r.URL.String(), http.StatusSeeOther)
+	}
 }
 
 func last(posts []*store.Post) *store.Post {
