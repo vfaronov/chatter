@@ -12,7 +12,7 @@ import (
 
 type Post struct {
 	ID     primitive.ObjectID `bson:"_id,omitempty"`
-	RoomID primitive.ObjectID `bson:"room_id"`
+	RoomID primitive.ObjectID `bson:"roomId"`
 	Serial uint32
 	Author string
 	Time   time.Time
@@ -60,7 +60,7 @@ func (db *DB) GetPosts(
 	ctx context.Context, roomID primitive.ObjectID,
 	since, before uint32,
 ) ([]*Post, error) {
-	filter := bson.M{"room_id": roomID}
+	filter := bson.M{"roomId": roomID}
 	if since > 0 {
 		filter["serial"] = bson.M{"$gt": since}
 	}
