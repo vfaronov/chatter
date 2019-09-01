@@ -14,18 +14,19 @@ import (
 // To cancel streaming, call StopStreaming with the same channel.
 func (db *DB) StreamPosts(roomID primitive.ObjectID) chan *Post {
 	ch := make(chan *Post, 128)
-	db.attach <- listener{ch, roomID}
+	db.listeners.requests <- listenReq{true, ch, roomID}
 	return ch
 }
 
 // StopStreaming stops streaming new posts to ch, and closes it eventually.
 func (db *DB) StopStreaming(ch chan *Post) {
-	db.attach <- listener{ch, primitive.NilObjectID}
+	db.listeners.requests <- listenReq{attach: false, ch: ch}
 }
 
-type listener struct {
+type listenReq struct {
+	attach bool // false means detach an existing listener
 	ch     chan *Post
-	roomID primitive.ObjectID // zero is used to request detach
+	roomID primitive.ObjectID
 }
 
 func (db *DB) runPump(ctx context.Context) {
@@ -39,7 +40,7 @@ func (db *DB) runPump(ctx context.Context) {
 	}
 	defer cs.Close(ctx)
 	for cs.Next(ctx) {
-		db.processListeners()
+		db.processListenReqs()
 		var data struct {
 			Post *Post `bson:"fullDocument"`
 		}
@@ -48,29 +49,32 @@ func (db *DB) runPump(ctx context.Context) {
 			log.Printf("cannot decode data from change stream: %v", err)
 			continue
 		}
-		for _, l := range db.listeners {
-			if l.roomID == data.Post.RoomID {
-				db.trySend(l.ch, data.Post)
-			}
+		for ch := range db.listeners.byRoom[data.Post.RoomID] {
+			db.trySend(ch, data.Post)
 		}
 	}
 	log.Printf("pump shutting down: %v", cs.Err())
 }
 
-// processListeners handles all attach/detach requests that may have queued up.
-func (db *DB) processListeners() {
+// processListenReqs handles all listen requests that may have queued up.
+func (db *DB) processListenReqs() {
 	for {
 		select {
-		case l := <-db.attach:
-			if l.roomID.IsZero() {
-				log.Printf("detaching listener: %v", l.ch)
-				if _, ok := db.listeners[l.ch]; ok {
-					delete(db.listeners, l.ch)
-					close(l.ch)
+		case req := <-db.listeners.requests:
+			if req.attach {
+				log.Printf("attaching listener: %v", req.ch)
+				if db.listeners.byRoom[req.roomID] == nil {
+					db.listeners.byRoom[req.roomID] = make(map[chan *Post]struct{})
 				}
+				db.listeners.byRoom[req.roomID][req.ch] = struct{}{}
+				db.listeners.byChannel[req.ch] = req.roomID
 			} else {
-				log.Printf("attaching listener: %v", l.ch)
-				db.listeners[l.ch] = l
+				log.Printf("detaching listener: %v", req.ch)
+				if roomID, ok := db.listeners.byChannel[req.ch]; ok {
+					delete(db.listeners.byRoom[roomID], req.ch)
+					delete(db.listeners.byChannel, req.ch)
+					close(req.ch)
+				}
 			}
 		default:
 			return
@@ -78,7 +82,7 @@ func (db *DB) processListeners() {
 	}
 }
 
-// trySend attempts to send a new post to an attached listener.
+// trySend attempts to send post to an attached listener.
 // If the listener's buffer is full, trySend detaches it.
 func (db *DB) trySend(ch chan *Post, post *Post) {
 	select {
@@ -86,7 +90,8 @@ func (db *DB) trySend(ch chan *Post, post *Post) {
 		// OK
 	default:
 		log.Printf("detaching dead listener: %v", ch)
-		delete(db.listeners, ch)
+		delete(db.listeners.byRoom[post.RoomID], ch)
+		delete(db.listeners.byChannel, ch)
 		close(ch)
 	}
 }

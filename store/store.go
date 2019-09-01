@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strings"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -41,8 +42,9 @@ func ConnectDB(ctx context.Context, uri string) (*DB, error) {
 	db.rooms = db.client.Database(dbname).Collection("rooms")
 	db.posts = db.client.Database(dbname).Collection("posts")
 
-	db.listeners = make(map[chan *Post]listener)
-	db.attach = make(chan listener, 1024)
+	db.listeners.byRoom = make(map[primitive.ObjectID]map[chan *Post]struct{})
+	db.listeners.byChannel = make(map[chan *Post]primitive.ObjectID)
+	db.listeners.requests = make(chan listenReq, 1024)
 	go db.runPump(ctx)
 
 	return db, nil
@@ -53,8 +55,14 @@ type DB struct {
 	rooms  *mongo.Collection
 	posts  *mongo.Collection
 
-	listeners map[chan *Post]listener
-	attach    chan listener
+	listeners struct {
+		// byRoom is for sending a new post to all listening to the room.
+		// byChannel is for locating the room ID to detach a listener.
+		// These maps are accessed only by the goroutine that consumes requests.
+		byRoom    map[primitive.ObjectID]map[chan *Post]struct{}
+		byChannel map[chan *Post]primitive.ObjectID
+		requests  chan listenReq
+	}
 }
 
 var NotFound = errors.New("not found")
