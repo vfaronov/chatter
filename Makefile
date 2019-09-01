@@ -7,3 +7,4 @@ lint:
 
 bin:
 	go install github.com/vfaronov/chatter/cmd/chatter
+	go install github.com/vfaronov/chatter/cmd/chattertool
