@@ -14,6 +14,7 @@ type Room struct {
 	ID      primitive.ObjectID `bson:"_id,omitempty"`
 	Title   string
 	Updated time.Time
+	Serial  uint64
 }
 
 func (db *DB) CreateRoom(ctx context.Context, room *Room) error {

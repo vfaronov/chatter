@@ -28,6 +28,10 @@ ul.rooms > li {
     max-width: 100%;
 }
 
+.post.placeholder {
+    background-color: #fdfdfd;
+}
+
 .post {
     margin-top: 1em;
 }

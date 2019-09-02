@@ -7,16 +7,49 @@
 {{end}}
 
 {{define "body"}}
-<div ic-sse-src="updates/?since={{.LastPost.Serial}}"
-     ic-swap-style=append>
-  {{range .Posts}}{{template "post" .}}{{end}}
+<div {{if eq .Following 0}}ic-sse-src="updates/?since={{.LastPost.Serial}}" ic-swap-style="append"{{end}}>
+  {{block "posts" . -}}
+
+  {{if gt .Preceding 0 -}}
+  <div class="post placeholder" id=older ic-enhance=true>
+    <a href="?before={{.FirstPost.Serial}}"
+       ic-target="#older" ic-replace-target=true ic-push-url=false
+       >...older posts...</a>
+    ({{.Preceding}} total)
+  </div>
+  {{- end}}
+
+  {{range .Posts -}}
+  {{block "post" . -}}
+  <div class=post>
+    <span class=author>{{.Author}}</span>
+    <span class=time>{{.Time.Format "2006 Jan 2 15:04"}}</span>
+    <p>{{.Text}}</p>
+  </div>
+  {{- end}}
+  {{- end}}
+
+  {{if gt .Following 0 -}}
+  <div class="post placeholder" id=newer ic-enhance=true>
+    <a href="?since={{.LastPost.Serial}}"
+       ic-target="#newer" ic-replace-target=true ic-push-url=false
+       >...newer posts...</a>
+    ({{.Following}} total)
+  </div>
+  {{- end}}
+
+  {{- end}}
 </div>
 
 <form id=newpost class=post method=post
       ic-post-to="." ic-on-success="document.forms.newpost.reset()">
   <div>
+    {{if eq .Following 0 -}}
     <textarea name=text required></textarea>
     <input type=submit value=Post>
+    {{- else -}}
+    <a href=".">Go to latest discussion</a>
+    {{- end}}
   </div>
 </form>
 {{end}}

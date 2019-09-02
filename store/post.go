@@ -13,7 +13,7 @@ import (
 type Post struct {
 	ID     primitive.ObjectID `bson:"_id,omitempty"`
 	RoomID primitive.ObjectID `bson:"roomId"`
-	Serial uint32
+	Serial uint64
 	Author string
 	Time   time.Time
 	Text   string
@@ -35,7 +35,7 @@ func (db *DB) CreatePost(ctx context.Context, post *Post) error {
 		options.FindOneAndUpdate().SetReturnDocument(options.After),
 	)
 	var room struct {
-		Serial uint32
+		Serial uint64
 	}
 	err := res1.Decode(&room)
 	switch {
@@ -56,26 +56,28 @@ func (db *DB) CreatePost(ctx context.Context, post *Post) error {
 	return nil
 }
 
-func (db *DB) GetPosts(
-	ctx context.Context, roomID primitive.ObjectID,
-	since, before uint32,
+func (db *DB) GetPostsSince(
+	ctx context.Context,
+	roomID primitive.ObjectID,
+	since uint64,
+	n int64,
 ) ([]*Post, error) {
-	filter := bson.M{"roomId": roomID}
-	if since > 0 {
-		filter["serial"] = bson.M{"$gt": since}
-	}
-	if before > 0 {
-		filter["before"] = bson.M{"$lt": before}
+	opts := options.Find().SetSort(bson.M{"serial": 1})
+	if n > 0 {
+		opts = opts.SetLimit(n)
 	}
 	cur, err := db.posts.Find(ctx,
-		filter,
-		options.Find().SetSort(bson.M{"serial": 1}),
+		bson.M{
+			"roomId": roomID,
+			"serial": bson.M{"$gt": since},
+		},
+		opts,
 	)
 	if err != nil {
 		return nil, err
 	}
 	defer cur.Close(ctx)
-	var posts []*Post
+	posts := make([]*Post, 0, n)
 	for cur.Next(ctx) {
 		post := &Post{}
 		err = cur.Decode(post)
@@ -85,4 +87,40 @@ func (db *DB) GetPosts(
 		posts = append(posts, post)
 	}
 	return posts, cur.Err()
+}
+
+func (db *DB) GetPostsBefore(
+	ctx context.Context,
+	roomID primitive.ObjectID,
+	before uint64,
+	n int64,
+) ([]*Post, error) {
+	cur, err := db.posts.Find(ctx,
+		bson.M{
+			"roomId": roomID,
+			"serial": bson.M{"$lt": before},
+		},
+		options.Find().
+			SetSort(bson.M{"serial": -1}).
+			SetLimit(n),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+	// We query MongoDB with reverse sort order, so that we get "20 posts
+	// before this one", but we still want to display them in forward order,
+	// so we fill in the slice starting from the end.
+	posts := make([]*Post, n)
+	i := n - 1
+	for cur.Next(ctx) {
+		post := &Post{}
+		err = cur.Decode(post)
+		if err != nil {
+			return posts, err
+		}
+		posts[i] = post
+		i--
+	}
+	return posts[i+1:], cur.Err()
 }

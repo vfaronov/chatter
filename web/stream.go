@@ -21,13 +21,11 @@ func (s *Server) getRoomUpdates(w http.ResponseWriter, r *http.Request, room *st
 
 	var err error
 
-	var since uint32
+	var since uint64
 	if last := r.Header.Get("Last-Event-Id"); last != "" {
 		_, err = fmt.Sscanf(last, "serial:%d", &since)
 	} else if err = r.ParseForm(); err == nil {
-		var since64 uint64
-		since64, err = strconv.ParseUint(r.Form.Get("since"), 10, 64)
-		since = uint32(since64)
+		since, err = strconv.ParseUint(r.Form.Get("since"), 10, 64)
 	}
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -41,7 +39,7 @@ func (s *Server) getRoomUpdates(w http.ResponseWriter, r *http.Request, room *st
 
 	var posts []*store.Post
 	if since > 0 {
-		posts, err = s.db.GetPosts(ctx, room.ID, since, 0)
+		posts, err = s.db.GetPostsSince(ctx, room.ID, since, 0)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -55,7 +53,7 @@ func (s *Server) getRoomUpdates(w http.ResponseWriter, r *http.Request, room *st
 	f.Flush()
 
 	// Send any posts since.
-	var cutoff uint32
+	var cutoff uint64
 	for _, post := range posts {
 		err = sendPost(w, post)
 		if err != nil {

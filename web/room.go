@@ -1,10 +1,12 @@
 package web
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/vfaronov/chatter/store"
@@ -15,7 +17,6 @@ var (
 	roomTpl = template.Must(template.ParseFiles(
 		"web/templates/page.html",
 		"web/templates/room.html",
-		"web/templates/post.html",
 	))
 )
 
@@ -42,21 +43,71 @@ func (s *Server) withRoom(
 }
 
 func (s *Server) getRoom(w http.ResponseWriter, r *http.Request, room *store.Room) {
-	posts, err := s.db.GetPosts(r.Context(), room.ID, 0, 0)
+	var err error
+	var before, since uint64
+	if err = r.ParseForm(); err == nil {
+		if s := r.Form.Get("before"); s != "" {
+			before, err = strconv.ParseUint(s, 10, 32)
+		}
+		if s := r.Form.Get("since"); s != "" {
+			since, err = strconv.ParseUint(s, 10, 32)
+		}
+	}
+	if before > 0 && since > 0 {
+		err = errors.New("cannot specify both before and since")
+	}
+	if err != nil {
+		http.Error(w, fmt.Sprintf("bad query string: %v", err),
+			http.StatusBadRequest)
+		return
+	}
+	if before == 0 && since == 0 {
+		before = room.Serial + 1
+	}
+
+	var posts []*store.Post
+	const pageSize = 20
+	ctx := r.Context()
+	if before > 0 {
+		posts, err = s.db.GetPostsBefore(ctx, room.ID, before, pageSize)
+	} else {
+		posts, err = s.db.GetPostsSince(ctx, room.ID, since, pageSize)
+	}
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	var data struct {
+		Room      *store.Room
+		Posts     []*store.Post
+		FirstPost *store.Post
+		LastPost  *store.Post
+		Preceding uint64
+		Following uint64
+	}
+	data.Room = room
+	data.Posts = posts
+	if len(posts) > 0 {
+		data.FirstPost = posts[0]
+		data.LastPost = posts[len(posts)-1]
+		data.Preceding = data.FirstPost.Serial - 1
+		data.Following = room.Serial - data.LastPost.Serial
+	}
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	err = roomTpl.Execute(w, struct {
-		Room     *store.Room
-		Posts    []*store.Post
-		LastPost *store.Post
-	}{
-		Room:     room,
-		Posts:    posts,
-		LastPost: last(posts),
-	})
+	if isXHR(r) {
+		// When we interactively replace the "older posts" fragment of the page,
+		// it shouldn't contain the "newer posts" link, and vice-versa.
+		if before > 0 {
+			data.Following = 0
+		} else {
+			data.Preceding = 0
+		}
+		err = roomTpl.ExecuteTemplate(w, "posts", data)
+	} else {
+		err = roomTpl.Execute(w, data)
+	}
 	if err != nil {
 		log.Printf("cannot render room: %v", err)
 	}
@@ -88,11 +139,4 @@ func (s *Server) postRoom(w http.ResponseWriter, r *http.Request, room *store.Ro
 	} else {
 		http.Redirect(w, r, r.URL.String(), http.StatusSeeOther)
 	}
-}
-
-func last(posts []*store.Post) *store.Post {
-	if len(posts) == 0 {
-		return &store.Post{}
-	}
-	return posts[len(posts)-1]
 }

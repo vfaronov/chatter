@@ -40,7 +40,6 @@ func insertFakeRoom(ctx context.Context, db *DB, factor int) error {
 	// Begin up to factor days ago.
 	post := &Post{
 		RoomID: room.ID,
-		Serial: 1,
 	}
 	now := time.Now()
 	post.Time = now.Add(-time.Duration(1+rand.Intn(factor)) * 24 * time.Hour)
@@ -55,9 +54,10 @@ func insertFakeRoom(ctx context.Context, db *DB, factor int) error {
 		post.ID = primitive.NilObjectID
 		// Some discussions remain perpetually active;
 		// others peter out after a number of posts.
-		if !active && rand.Float64() < float64(post.Serial-1)/100 {
+		if !active && rand.Float64() < float64(post.Serial)/100 {
 			break
 		}
+		post.Serial++
 		post.Author = oneOf(gofakeit.Username(), gofakeit.Name())
 		post.Text = oneOf(
 			gofakeit.Paragraph(1, 1+rand.Intn(5), 1+rand.Intn(10), ""),
@@ -70,13 +70,12 @@ func insertFakeRoom(ctx context.Context, db *DB, factor int) error {
 		if err != nil {
 			return err
 		}
-		post.Serial++
 	}
 
 	// Update room info to reflect the last post.
-	_, err := db.rooms.UpdateOne(ctx, bson.M{"_id": room.ID},
-		bson.M{"$set": bson.M{"updated": post.Time, "serial": post.Serial}},
-	)
+	room.Updated = post.Time
+	room.Serial = post.Serial
+	_, err := db.rooms.ReplaceOne(ctx, bson.M{"_id": room.ID}, room)
 	if err != nil {
 		return err
 	}
