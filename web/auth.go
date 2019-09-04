@@ -7,7 +7,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func (s *Server) withAuth(next http.Handler) http.Handler {
+func withAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user, _, ok := r.BasicAuth()
 		if ok && user != "" {
@@ -17,7 +17,7 @@ func (s *Server) withAuth(next http.Handler) http.Handler {
 	})
 }
 
-func (s *Server) needAuth(next httprouter.Handle) httprouter.Handle {
+func needAuth(next httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		_, ok := r.Context().Value(userKey).(string)
 		if !ok {
@@ -29,6 +29,6 @@ func (s *Server) needAuth(next httprouter.Handle) httprouter.Handle {
 	}
 }
 
-func (s *Server) mustUser(r *http.Request) string {
+func mustUser(r *http.Request) string {
 	return r.Context().Value(userKey).(string)
 }

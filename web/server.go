@@ -18,10 +18,10 @@ func NewServer(addr string, db *store.DB) *Server {
 	r.GET("/rooms/", s.getRooms)
 	r.POST("/rooms/", s.postRooms)
 	r.GET("/rooms/:roomID/", s.withRoom(s.getRoom))
-	r.POST("/rooms/:roomID/", s.needAuth(s.withRoom(s.postRoom)))
+	r.POST("/rooms/:roomID/", needAuth(s.withRoom(s.postRoom)))
 	r.GET("/rooms/:roomID/updates/", s.withRoom(s.getRoomUpdates))
 
-	s.Server.Handler = s.withAuth(r)
+	s.Server.Handler = withAuth(withReqID(r))
 
 	return s
 }
@@ -47,4 +47,5 @@ type key int
 
 const (
 	userKey key = iota
+	reqIDKey
 )

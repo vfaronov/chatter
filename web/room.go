@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -31,7 +30,7 @@ func (s *Server) withRoom(
 		}
 		room, err := s.db.GetRoom(r.Context(), id)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			reqFatalf(w, r, err, "failed to get room")
 			return
 		}
 		if room == nil {
@@ -74,7 +73,7 @@ func (s *Server) getRoom(w http.ResponseWriter, r *http.Request, room *store.Roo
 		posts, err = s.db.GetPostsSince(ctx, room.ID, since, pageSize)
 	}
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		reqFatalf(w, r, err, "failed to get posts")
 		return
 	}
 
@@ -109,19 +108,19 @@ func (s *Server) getRoom(w http.ResponseWriter, r *http.Request, room *store.Roo
 		err = roomTpl.Execute(w, data)
 	}
 	if err != nil {
-		log.Printf("cannot render room: %v", err)
+		reqLogf(r, "failed to render room: %v", err)
 	}
 }
 
 func (s *Server) postRoom(w http.ResponseWriter, r *http.Request, room *store.Room) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, fmt.Sprintf("bad form: %s", err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("bad form: %v", err), http.StatusBadRequest)
 		return
 	}
 
 	post := &store.Post{
 		RoomID: room.ID,
-		Author: s.mustUser(r),
+		Author: mustUser(r),
 		Text:   r.Form.Get("text"),
 	}
 	if post.Text == "" {
@@ -130,7 +129,7 @@ func (s *Server) postRoom(w http.ResponseWriter, r *http.Request, room *store.Ro
 	}
 
 	if err := s.db.CreatePost(r.Context(), post); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		reqFatalf(w, r, err, "failed to create post")
 		return
 	}
 

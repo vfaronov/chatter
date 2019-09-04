@@ -3,7 +3,6 @@ package web
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -14,7 +13,7 @@ func (s *Server) getRoomUpdates(w http.ResponseWriter, r *http.Request, room *st
 	ctx := r.Context()
 	f, ok := w.(http.Flusher)
 	if !ok {
-		log.Printf("cannot stream events to %T", w)
+		reqLogf(r, "cannot stream events to %T", w)
 		http.Error(w, "cannot stream events", http.StatusNotImplemented)
 		return
 	}
@@ -23,7 +22,7 @@ func (s *Server) getRoomUpdates(w http.ResponseWriter, r *http.Request, room *st
 
 	var since uint64
 	if last := r.Header.Get("Last-Event-Id"); last != "" {
-		_, err = fmt.Sscanf(last, "serial:%d", &since)
+		since, err = strconv.ParseUint(last, 10, 64)
 	} else if err = r.ParseForm(); err == nil {
 		since, err = strconv.ParseUint(r.Form.Get("since"), 10, 64)
 	}
@@ -41,7 +40,7 @@ func (s *Server) getRoomUpdates(w http.ResponseWriter, r *http.Request, room *st
 	if since > 0 {
 		posts, err = s.db.GetPostsSince(ctx, room.ID, since, 0)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			reqFatalf(w, r, err, "failed to get initial posts")
 			return
 		}
 	}
@@ -52,17 +51,19 @@ func (s *Server) getRoomUpdates(w http.ResponseWriter, r *http.Request, room *st
 	w.Header().Set("Cache-Control", "no-store")
 	f.Flush()
 
-	// Send any posts since.
+	// Send any initial posts since.
 	var cutoff uint64
 	for _, post := range posts {
 		err = sendPost(w, post)
 		if err != nil {
-			log.Printf("stopping stream due to error: %v", err)
+			reqLogf(r, "failed to send initial posts: %v", err)
 			return
 		}
 		cutoff = post.Serial
 	}
 	f.Flush()
+
+	reqLogf(r, "start streaming posts (initial cutoff at %v)", cutoff)
 
 loop: // Send new posts as they arrive.
 	for {
@@ -81,6 +82,7 @@ loop: // Send new posts as they arrive.
 		}
 		if post.Serial <= cutoff {
 			// We already got this post from GetPosts.
+			reqLogf(r, "skip initial post %v", post.Serial)
 			continue loop
 		}
 		err = sendPost(w, post)
@@ -90,13 +92,13 @@ loop: // Send new posts as they arrive.
 		f.Flush()
 	}
 	if err != nil {
-		log.Printf("stopped event stream due to error: %v", err)
+		reqLogf(r, "stop streaming posts: %v", err)
 	}
 }
 
 // sendPost writes post to w as an HTML fragment in a text/event-stream message.
 func sendPost(w http.ResponseWriter, post *store.Post) error {
-	_, err := fmt.Fprintf(w, "id: serial:%d\ndata: ", post.Serial)
+	_, err := fmt.Fprintf(w, "id: %d\ndata: ", post.Serial)
 	if err != nil {
 		return err
 	}

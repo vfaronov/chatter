@@ -4,3 +4,10 @@ linters:
     - goimports
     - gosec
     - misspell
+
+issues:
+  exclude-rules:
+    - linters:
+        - gosec
+      # Use of weak random number generator (math/rand instead of crypto/rand)
+      text: "G404:"

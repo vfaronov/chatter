@@ -26,17 +26,17 @@ func main() {
 
 	db, err := store.ConnectDB(ctx, config.StoreURI)
 	if err != nil {
-		log.Fatalf("cannot connect to storage DB: %v", err)
+		log.Fatalf("failed to connect to storage DB: %v", err)
 	}
 
 	if initDB {
 		if err := store.InitDB(ctx, db); err != nil {
-			log.Fatalf("cannot init DB: %v", err)
+			log.Fatalf("failed to init DB: %v", err)
 		}
 	}
 	if insertFake > 0 {
 		if err := store.InsertFake(ctx, db, insertFake); err != nil {
-			log.Fatalf("cannot insert fake data: %v", err)
+			log.Fatalf("failed to insert fake data: %v", err)
 		}
 	}
 }

@@ -35,7 +35,7 @@ func (db *DB) runPump(ctx context.Context) {
 		[]bson.M{{"$match": bson.M{"operationType": "insert"}}},
 	)
 	if err != nil {
-		log.Printf("cannot start change stream: %v", err)
+		log.Printf("failed to start change stream: %v", err)
 		return
 	}
 	defer cs.Close(ctx)
@@ -46,7 +46,7 @@ func (db *DB) runPump(ctx context.Context) {
 		}
 		err := cs.Decode(&data)
 		if err != nil {
-			log.Printf("cannot decode data from change stream: %v", err)
+			log.Printf("failed to decode data from change stream: %v", err)
 			continue
 		}
 		for ch := range db.listeners.byRoom[data.Post.RoomID] {
