@@ -3,6 +3,7 @@
   {{range .}}
   <li>
     <a href="{{.ID.Hex}}/">{{.Title}}</a>
+    {{.Serial}} post{{if ne .Serial 1}}s{{end}},
     updated {{.Updated.Format "2006 Jan 2 15:04"}}
   </li>
   {{end}}
