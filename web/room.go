@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	roomTpl = template.Must(template.ParseFiles(
+	roomTpl = template.Must(template.New("page.html").Funcs(funcMap).ParseFiles(
 		"web/templates/page.html",
 		"web/templates/room.html",
 	))

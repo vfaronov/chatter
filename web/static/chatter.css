@@ -24,16 +24,17 @@ ul.rooms > li {
     background-color: #f7fafc;
     border: solid 1px #ebebeb;
     padding: 0.5em;
+    margin-top: 1em;
     width: max-content;
     max-width: 100%;
 }
 
-.post.placeholder {
-    background-color: #fdfdfd;
+.post:target {
+    border: solid 1px #333333;
 }
 
-.post {
-    margin-top: 1em;
+.post.placeholder {
+    background-color: #fdfdfd;
 }
 
 .post p {
@@ -51,6 +52,8 @@ ul.rooms > li {
     color: #555555;
     float: right;
     margin-left: 1em;
+    text-decoration: none;
+    border-bottom: dotted 1px #aaaaaa;
 }
 
 form.post input[type=submit] {

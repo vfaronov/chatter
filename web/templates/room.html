@@ -21,9 +21,11 @@
 
   {{range .Posts -}}
   {{block "post" . -}}
-  <div class=post>
+  <div class=post id=post{{.Serial}}>
     <span class=author>{{.Author}}</span>
-    <span class=time>{{.Time.Format "2006 Jan 2 15:04"}}</span>
+    <a class=time title=permalink href="?before={{addUint64 .Serial 10}}#post{{.Serial}}">
+      {{.Time.Format "2006 Jan 2 15:04"}}
+    </a>
     <p>{{.Text}}</p>
   </div>
   {{- end}}
