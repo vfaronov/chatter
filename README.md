@@ -32,16 +32,16 @@ Initialize the database with some fake data:
 
     chattertool -init-db -insert-fake 100
     
-The Web server must be started from the `web` directory because static files
+The Web server must be started from the repo root because static files
 and templates are not yet compiled into the binary:
 
-    cd $(go env GOPATH)/src/github.com/vfaronov/chatter/web
+    cd $(go env GOPATH)/src/github.com/vfaronov/chatter
     chatter
     
 (see also `-help`)
 
-Go to [`localhost:10242`](http://localhost:10242/). When prompted for HTTP
-authentication, type any username.
+Go to [`localhost:10242/rooms/`](http://localhost:10242/rooms/). When prompted
+for HTTP authentication, type any username.
 
 
 ## To Do
