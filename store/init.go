@@ -14,6 +14,17 @@ import (
 func InitDB(ctx context.Context, db *DB) error {
 	var err error
 
+	log.Print("store: creating index for users")
+	_, err = db.users.Indexes().CreateOne(ctx,
+		mongo.IndexModel{
+			Keys:    bson.M{"name": 1},
+			Options: options.Index().SetUnique(true),
+		},
+	)
+	if err != nil {
+		return err
+	}
+
 	log.Print("store: creating index for rooms")
 	_, err = db.rooms.Indexes().CreateOne(ctx,
 		mongo.IndexModel{

@@ -39,6 +39,7 @@ func ConnectDB(ctx context.Context, uri string) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
+	db.users = db.client.Database(dbname).Collection("users")
 	db.rooms = db.client.Database(dbname).Collection("rooms")
 	db.posts = db.client.Database(dbname).Collection("posts")
 
@@ -52,6 +53,7 @@ func ConnectDB(ctx context.Context, uri string) (*DB, error) {
 
 type DB struct {
 	client *mongo.Client
+	users  *mongo.Collection
 	rooms  *mongo.Collection
 	posts  *mongo.Collection
 
@@ -65,4 +67,20 @@ type DB struct {
 	}
 }
 
-var NotFound = errors.New("not found")
+var (
+	ErrNotFound       = errors.New("not found")
+	ErrDuplicate      = errors.New("duplicate")
+	ErrBadCredentials = errors.New("bad credentials")
+)
+
+// isDuplicateKey returns true if err indicates a duplicate key error from MongoDB.
+func isDuplicateKey(err error) bool {
+	if err, ok := err.(mongo.WriteException); ok {
+		for _, err := range err.WriteErrors {
+			if err.Code == 11000 {
+				return true
+			}
+		}
+	}
+	return false
+}

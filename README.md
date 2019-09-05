@@ -7,8 +7,8 @@ Web chat. It is a practice project, not intended to be used in production.
 
 The unusual thing about Chatter is that it has almost **no JavaScript code**
 of its own: instead, server-rendered HTML is progressively enhanced with
-[Intercooler][2]. This is because, firstly, I didn't want to build a frontend,
-and secondly, I was intrigued by Intercooler's [approach][3] and wanted to see
+[intercooler][2]. This is because, firstly, I didn't want to build a frontend,
+and secondly, I was intrigued by intercooler's [approach][3] and wanted to see
 how far I can take it. The result has less polished UX than would be possible
 with a proper frontend, but is much simpler to build and also completely usable
 without JavaScript.
@@ -36,21 +36,20 @@ The Web server must be started from the repo root because static files
 and templates are not yet compiled into the binary:
 
     cd $(go env GOPATH)/src/github.com/vfaronov/chatter
-    chatter
+    chatter -key mysecret
     
 (see also `-help`)
 
-Go to [`localhost:10242/rooms/`](http://localhost:10242/rooms/). When prompted
-for HTTP authentication, type any username.
+Then go to [`localhost:10242/rooms/`](http://localhost:10242/rooms/).
 
 
 ## To Do
 
-* sign up / log in / log out
 * functional and stress tests
 * metrics
 * graceful shutdown
 * dependency management
+* user log out, etc.
 * CSRF protection
 * paging in room list
 * Markdown support

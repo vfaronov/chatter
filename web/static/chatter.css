@@ -56,7 +56,7 @@ ul.rooms > li {
     border-bottom: dotted 1px #aaaaaa;
 }
 
-form.post input[type=submit] {
+form.post button {
     float: right;
     margin-left: 0.5em;
 }

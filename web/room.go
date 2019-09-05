@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/julienschmidt/httprouter"
@@ -42,7 +43,12 @@ func (s *Server) withRoom(
 }
 
 func (s *Server) getRoom(w http.ResponseWriter, r *http.Request, room *store.Room) {
-	var err error
+	session, err := s.sess.Get(r, "session")
+	if err != nil {
+		reqFatalf(w, r, err, "failed to read session")
+		return
+	}
+
 	var before, since uint64
 	if err = r.ParseForm(); err == nil {
 		if s := r.Form.Get("before"); s != "" {
@@ -78,6 +84,8 @@ func (s *Server) getRoom(w http.ResponseWriter, r *http.Request, room *store.Roo
 	}
 
 	var data struct {
+		UserName  string
+		URL       *url.URL
 		Room      *store.Room
 		Posts     []*store.Post
 		FirstPost *store.Post
@@ -85,6 +93,10 @@ func (s *Server) getRoom(w http.ResponseWriter, r *http.Request, room *store.Roo
 		Preceding uint64
 		Following uint64
 	}
+	if v, ok := session.Values["name"]; ok {
+		data.UserName = v.(string)
+	}
+	data.URL = r.URL
 	data.Room = room
 	data.Posts = posts
 	if len(posts) > 0 {
@@ -113,6 +125,16 @@ func (s *Server) getRoom(w http.ResponseWriter, r *http.Request, room *store.Roo
 }
 
 func (s *Server) postRoom(w http.ResponseWriter, r *http.Request, room *store.Room) {
+	session, err := s.sess.Get(r, "session")
+	if err != nil {
+		http.Error(w, "cannot read session", http.StatusBadRequest)
+		return
+	}
+	userName, ok := session.Values["name"].(string)
+	if !ok {
+		http.Error(w, "not logged in", http.StatusForbidden)
+		return
+	}
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, fmt.Sprintf("bad form: %v", err), http.StatusBadRequest)
 		return
@@ -120,7 +142,7 @@ func (s *Server) postRoom(w http.ResponseWriter, r *http.Request, room *store.Ro
 
 	post := &store.Post{
 		RoomID: room.ID,
-		Author: mustUser(r),
+		Author: userName,
 		Text:   r.Form.Get("text"),
 	}
 	if post.Text == "" {

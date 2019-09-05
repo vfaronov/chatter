@@ -40,7 +40,7 @@ func (db *DB) CreatePost(ctx context.Context, post *Post) error {
 	err := res1.Decode(&room)
 	switch {
 	case err == mongo.ErrNoDocuments:
-		return NotFound
+		return ErrNotFound
 	case err != nil:
 		return err
 	}

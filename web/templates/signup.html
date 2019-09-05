@@ -1,0 +1,13 @@
+{{define "body"}}
+
+<form method=post>
+  <p><label>User name: <input name=name required></label></p>
+  <p><label>Password: <input type=password name=password required></label></p>
+  <p>
+    <input type=hidden name=redir value="{{.Redir}}">
+    <button name=action value=log-in>Log In</button>
+    <button name=action value=sign-up>Sign Up</button>
+  </p>
+</form>
+
+{{end}}

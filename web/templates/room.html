@@ -45,13 +45,15 @@
 
 <form id=newpost class=post method=post
       ic-post-to="." ic-on-success="document.forms.newpost.reset()">
-  <div>
-    {{if eq .Following 0 -}}
-    <textarea name=text required></textarea>
-    <input type=submit value=Post>
-    {{- else -}}
-    <a href=".">Go to latest discussion</a>
-    {{- end}}
+  {{if gt .Following 0 -}}
+  <div><a href=".">Go to latest discussion</a></div>
+  {{- else if eq .UserName "" -}}
+  <div><a href="/signup/?redir={{.URL}}">Log in or sign up</a>
+  to participate in this discussion</div>
+  {{- else -}}
+  <div><span class=author>{{.UserName}}</span></div>
+  <p><textarea name=text required></textarea> <button>Post</button></p>
+  {{- end}}
   </div>
 </form>
 {{end}}
