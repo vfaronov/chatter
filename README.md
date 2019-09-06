@@ -49,7 +49,6 @@ Then go to [`localhost:10242/rooms/`](http://localhost:10242/rooms/).
 * metrics
 * graceful shutdown
 * dependency management
-* user log out, etc.
 * CSRF protection
 * paging in room list
 * Markdown support

@@ -23,8 +23,8 @@ func (s *Server) getRoomUpdates(w http.ResponseWriter, r *http.Request, room *st
 	var since uint64
 	if last := r.Header.Get("Last-Event-Id"); last != "" {
 		since, err = strconv.ParseUint(last, 10, 64)
-	} else if err = r.ParseForm(); err == nil {
-		since, err = strconv.ParseUint(r.Form.Get("since"), 10, 64)
+	} else if s := r.Form.Get("since"); s != "" {
+		since, err = strconv.ParseUint(s, 10, 64)
 	}
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

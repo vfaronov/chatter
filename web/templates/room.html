@@ -1,16 +1,14 @@
 {{define "title"}}{{.Room.Title}}{{end}}
 
 {{define "nav"}}
-<nav>
-  <p><a href="../">← all rooms</a></p>
-</nav>
+<nav><a href="../">← all rooms</a></nav>
 {{end}}
 
 {{define "body"}}
-<div {{if eq .Following 0}}ic-sse-src="updates/?since={{.LastPost.Serial}}" ic-swap-style="append"{{end}}>
+<div {{if not .Following}}ic-sse-src="updates/?since={{.LastPost.Serial}}" ic-swap-style="append"{{end}}>
   {{block "posts" . -}}
 
-  {{if gt .Preceding 0 -}}
+  {{if .Preceding -}}
   <div class="post placeholder" id=older ic-enhance=true>
     <a href="?before={{.FirstPost.Serial}}"
        ic-target="#older" ic-replace-target=true ic-push-url=false
@@ -31,7 +29,7 @@
   {{- end}}
   {{- end}}
 
-  {{if gt .Following 0 -}}
+  {{if .Following -}}
   <div class="post placeholder" id=newer ic-enhance=true>
     <a href="?since={{.LastPost.Serial}}"
        ic-target="#newer" ic-replace-target=true ic-push-url=false
@@ -45,13 +43,13 @@
 
 <form id=newpost class=post method=post
       ic-post-to="." ic-on-success="document.forms.newpost.reset()">
-  {{if gt .Following 0 -}}
+  {{if .Following -}}
   <div><a href=".">Go to latest discussion</a></div>
-  {{- else if eq .UserName "" -}}
+  {{- else if eq .User "" -}}
   <div><a href="/signup/?redir={{.URL}}">Log in or sign up</a>
   to participate in this discussion</div>
   {{- else -}}
-  <div><span class=author>{{.UserName}}</span></div>
+  <div><span class=author>{{.User}}</span></div>
   <p><textarea name=text required></textarea> <button>Post</button></p>
   {{- end}}
   </div>

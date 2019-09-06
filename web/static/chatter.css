@@ -11,6 +11,10 @@ a:link, a:active, a:visited {
     color: #3465a4;
 }
 
+.userinfo {
+    float: right;
+}
+
 ul.rooms {
     padding-left: 0;
 }
@@ -44,7 +48,7 @@ ul.rooms > li {
     max-width: 100%;
 }
 
-.post .author {
+.author {
     font-weight: bold;
 }
 

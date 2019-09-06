@@ -1,7 +1,6 @@
 package web
 
 import (
-	"fmt"
 	"html/template"
 	"net/http"
 
@@ -21,13 +20,12 @@ func (s *Server) getRooms(w http.ResponseWriter, r *http.Request, ps httprouter.
 		reqFatalf(w, r, err, "failed to get rooms")
 		return
 	}
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	_ = roomsTpl.Execute(w, rooms)
+	s.renderPage(w, r, roomsTpl, "Rooms", rooms)
 }
 
 func (s *Server) postRooms(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, fmt.Sprintf("bad form: %v", err), http.StatusBadRequest)
+	if _, ok := s.userName(r); !ok {
+		http.Error(w, "not logged in", http.StatusForbidden)
 		return
 	}
 	room := &store.Room{}

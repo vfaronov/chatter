@@ -1,6 +1,6 @@
 {{define "body"}}
 <ul class=rooms>
-  {{range .}}
+  {{range .Rooms}}
   <li>
     <a href="{{.ID.Hex}}/">{{.Title}}</a>
     {{.Serial}} post{{if ne .Serial 1}}s{{end}},
@@ -10,10 +10,18 @@
 </ul>
 
 <h2>Start new room</h2>
+{{if .User -}}
 <form method=post>
   <p>
     <label>Title: <input name=title required></label>
     <input type=submit value=Start>
   </p>
 </form>
+{{- else -}}
+<p>
+  <a href="/signup/?redir={{.URL}}">Log in or sign up</a>
+  to participate in discussions
+</p>
+{{- end}}
+
 {{end}}

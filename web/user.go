@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 
+	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 	"github.com/vfaronov/chatter/store"
 )
@@ -16,30 +17,25 @@ var (
 	))
 )
 
+func (s *Server) session(r *http.Request) *sessions.Session {
+	// Gorilla's docs suggest checking error and responding with 500;
+	// but an invalid session should not abort handling (much less with a 500),
+	// it should just be ignored, creating a new session.
+	sess, _ := s.sessionStore.Get(r, "session")
+	return sess
+}
+
+func (s *Server) userName(r *http.Request) (string, bool) {
+	name, ok := s.session(r).Values["name"].(string)
+	return name, ok
+}
+
 func (s *Server) getSignup(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, fmt.Sprintf("bad query string: %v", err),
-			http.StatusBadRequest)
-		return
-	}
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	err := signupTpl.Execute(w, struct {
-		Redir string
-	}{
-		Redir: r.Form.Get("redir"),
-	})
-	if err != nil {
-		reqLogf(r, "failed to render page: %v", err)
-	}
+	s.renderPage(w, r, signupTpl, "Redir", r.Form.Get("redir"))
 }
 
 func (s *Server) postSignup(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	ctx := r.Context()
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, fmt.Sprintf("bad form: %v", err), http.StatusBadRequest)
-		return
-	}
-
 	user := &store.User{
 		Name:     r.Form.Get("name"),
 		Password: r.Form.Get("password"),
@@ -50,12 +46,7 @@ func (s *Server) postSignup(w http.ResponseWriter, r *http.Request, ps httproute
 		return
 	}
 
-	session, err := s.sess.Get(r, "session")
-	if err != nil {
-		http.Error(w, "cannot read session", http.StatusBadRequest)
-		return
-	}
-
+	var err error
 	switch r.Form.Get("action") {
 	case "sign-up":
 		reqLogf(r, "sign up %v", user.Name)
@@ -80,10 +71,28 @@ func (s *Server) postSignup(w http.ResponseWriter, r *http.Request, ps httproute
 		return
 	}
 
-	session.Values["name"] = user.Name
-	err = session.Save(r, w)
+	sess := s.session(r)
+	sess.Values["name"] = user.Name
+	err = sess.Save(r, w)
 	if err != nil {
 		reqFatalf(w, r, err, "cannot save session")
+		return
+	}
+	redir := r.Form.Get("redir")
+	if redir == "" {
+		redir = "/rooms/"
+	}
+	http.Redirect(w, r, redir, http.StatusSeeOther)
+}
+
+func (s *Server) postLogout(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	sess := s.session(r)
+	if sess.Options == nil {
+		sess.Options = &sessions.Options{}
+	}
+	sess.Options.MaxAge = -1
+	if err := sess.Save(r, w); err != nil {
+		reqFatalf(w, r, err, "failed to save session")
 		return
 	}
 	redir := r.Form.Get("redir")
