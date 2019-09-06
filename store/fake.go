@@ -16,6 +16,7 @@ import (
 // time range. Exactly factor rooms will be created; the number of posts
 // and the length of the time range also increases with factor.
 func InsertFake(ctx context.Context, db *DB, factor int) error {
+	// TODO: fake users
 	for i := 0; i < factor; i++ {
 		if err := insertFakeRoom(ctx, db, factor); err != nil {
 			return err

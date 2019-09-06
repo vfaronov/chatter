@@ -61,7 +61,7 @@ func (db *DB) GetPostsSince(
 	roomID primitive.ObjectID,
 	since uint64,
 	n int64,
-) ([]*Post, error) {
+) ([]*Post, error) { // TODO: []Post?
 	opts := options.Find().SetSort(bson.M{"serial": 1})
 	if n > 0 {
 		opts = opts.SetLimit(n)
@@ -94,7 +94,7 @@ func (db *DB) GetPostsBefore(
 	roomID primitive.ObjectID,
 	before uint64,
 	n int64,
-) ([]*Post, error) {
+) ([]*Post, error) { // TODO: []Post?
 	cur, err := db.posts.Find(ctx,
 		bson.M{
 			"roomId": roomID,

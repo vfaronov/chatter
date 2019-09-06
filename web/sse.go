@@ -13,6 +13,7 @@ type dataWriter struct {
 
 // Write implements the io.Writer interface.
 func (dw dataWriter) Write(p []byte) (n int, err error) {
+	// TODO: I think NUL bytes in p will also break the framing; sanitize them out
 	for {
 		pos := bytes.IndexByte(p, '\n')
 		if pos < 0 {

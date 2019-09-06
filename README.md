@@ -52,6 +52,9 @@ Then go to [`localhost:10242/rooms/`](http://localhost:10242/rooms/).
 * CSRF protection
 * paging in room list
 * Markdown support
+* changing room title
+* deleting posts
 * search
 * watching rooms for unread posts
-* lots more
+* user profile with recent posts
+* lots more; see "TODO" in code

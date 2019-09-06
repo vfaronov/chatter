@@ -49,6 +49,7 @@ func (s *Server) static(basename string) httprouter.Handle {
 func withForm(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if err := r.ParseForm(); err != nil {
+			// TODO: nicer HTML errors here and everywhere else
 			http.Error(w, fmt.Sprintf("cannot parse form: %v", err),
 				http.StatusBadRequest)
 			return

@@ -27,6 +27,7 @@ func ConnectDB(ctx context.Context, uri string) (*DB, error) {
 		return nil, fmt.Errorf("store: missing database name in URI: %q", uri)
 	}
 
+	// TODO: timeouts, etc.
 	log.Printf("store: connecting to %v", uri)
 	db := &DB{}
 	db.client, err = mongo.Connect(ctx, options.Client().
@@ -43,6 +44,7 @@ func ConnectDB(ctx context.Context, uri string) (*DB, error) {
 	db.rooms = db.client.Database(dbname).Collection("rooms")
 	db.posts = db.client.Database(dbname).Collection("posts")
 
+	// TODO: do not run pump in chattertool
 	db.listeners.byRoom = make(map[primitive.ObjectID]map[chan *Post]struct{})
 	db.listeners.byChannel = make(map[chan *Post]primitive.ObjectID)
 	db.listeners.requests = make(chan listenReq, 1024)

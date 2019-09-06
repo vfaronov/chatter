@@ -20,6 +20,8 @@ func (db *DB) StreamPosts(roomID primitive.ObjectID) chan *Post {
 
 // StopStreaming stops streaming new posts to ch, and closes it eventually.
 func (db *DB) StopStreaming(ch chan *Post) {
+	// TODO: can I pass a context.Context to StreamPosts and
+	// use that for cancellation instead of explicit call to StopStreaming?
 	db.listeners.requests <- listenReq{attach: false, ch: ch}
 }
 

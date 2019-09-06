@@ -22,6 +22,7 @@
   <div class=post id=post{{.Serial}}>
     <span class=author>{{.Author}}</span>
     <a class=time title=permalink href="?before={{addUint64 .Serial 10}}#post{{.Serial}}">
+      {{/* TODO: nicer time rendering, timezone-aware */ -}}
       {{.Time.Format "2006 Jan 2 15:04"}}
     </a>
     <p>{{.Text}}</p>

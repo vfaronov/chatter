@@ -13,6 +13,7 @@ import (
 )
 
 var (
+	// TODO: embed templates into binary
 	roomTpl = template.Must(template.New("page.html").Funcs(funcMap).ParseFiles(
 		"web/templates/page.html",
 		"web/templates/room.html",

@@ -22,6 +22,7 @@ func (db *DB) CreateRoom(ctx context.Context, room *Room) error {
 	room.Updated = time.Now()
 	res, err := db.rooms.InsertOne(ctx, room)
 	if err != nil {
+		// TODO: proper error wrapping? (here and elsewhere)
 		return err
 	}
 	room.ID = res.InsertedID.(primitive.ObjectID)
