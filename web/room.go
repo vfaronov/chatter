@@ -136,7 +136,7 @@ func (s *Server) postRoom(w http.ResponseWriter, r *http.Request, room *store.Ro
 	}
 
 	if isXHR(r) {
-		w.WriteHeader(http.StatusResetContent)
+		s.renderFragment(w, r, roomTpl, "postform")
 	} else {
 		http.Redirect(w, r, r.URL.String(), http.StatusSeeOther)
 	}

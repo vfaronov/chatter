@@ -41,8 +41,9 @@
   {{- end}}
 </div>
 
+{{block "postform" . -}}
 <form id=newpost class=post method=post
-      ic-post-to="." ic-on-success="document.forms.newpost.reset()">
+      ic-post-to="." ic-replace-target=true>
   {{if .Following -}}
   <div><a href=".">Go to latest discussion</a></div>
   {{- else if eq .User "" -}}
@@ -54,4 +55,6 @@
   {{- end}}
   </div>
 </form>
+{{- end}}
+
 {{end}}
