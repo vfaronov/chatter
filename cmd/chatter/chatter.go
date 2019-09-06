@@ -15,7 +15,12 @@ import (
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
-	var key string
+	var (
+		webAddr string
+		key     string
+	)
+	flag.StringVar(&webAddr, "web-addr", "localhost:10242",
+		"address for the Web server to listen on")
 	flag.StringVar(&key, "key", "", "secret key for cookie signing")
 	flag.Parse()
 
@@ -27,9 +32,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to connect to storage DB: %v", err)
 	}
-	svr := web.NewServer(config.WebAddr, db, []byte(key))
+	svr := web.NewServer(webAddr, db, []byte(key))
 
-	log.Printf("starting server on %v", config.WebAddr)
+	log.Printf("starting server on %v", webAddr)
 	err = svr.ListenAndServe()
 	log.Fatalf("server quit: %v", err)
 }
