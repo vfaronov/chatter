@@ -1,6 +1,6 @@
 .PHONY: devel lint bin
 
-devel: lint bin
+devel: bin lint
 
 lint:
 	golangci-lint run
