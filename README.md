@@ -24,7 +24,7 @@ You need Go 1.12+ and a MongoDB 3.6+ replica set. Here's a quick way to spin up 
     mongod --dbpath /some/empty/dir --replSet chatter
     mongo --eval 'rs.initiate({_id: "chatter", members: [{_id: 0, host: "localhost:27017"}]})'
     
-Install the `chatter` and `chattertool` binaries into `$(go env GOPATH)/bin`:
+Install the binaries into `$(go env GOPATH)/bin`:
 
     go get github.com/vfaronov/chatter/cmd/...
     
@@ -38,14 +38,17 @@ and templates are not yet compiled into the binary:
     cd $(go env GOPATH)/src/github.com/vfaronov/chatter
     chatter -key mysecret
     
-(see also `-help`)
-
 Then go to [`localhost:10242/rooms/`](http://localhost:10242/rooms/).
+Or run a herd of test bots:
+
+    chatterbot
+    
+See also `-help` for each command.
 
 
 ## To Do
 
-* functional and stress tests
+* more tests
 * metrics
 * graceful shutdown
 * dependency management

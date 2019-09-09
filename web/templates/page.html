@@ -15,7 +15,7 @@
   <body>
     {{if .User -}}
     <form class=userinfo action="/logout/" method=post>
-      <span class=author>{{.User}}</span> <button>log out</button>
+      <span class=author>{{.User}}</span> <button type=submit>log out</button>
       <input type=hidden name=redir value="{{.URL}}">
     </form>
     {{- else -}}

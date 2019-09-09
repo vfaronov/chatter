@@ -11,10 +11,10 @@
 
 <h2>Start new room</h2>
 {{if .User -}}
-<form method=post>
+<form id=newroom method=post>
   <p>
     <label>Title: <input name=title required></label>
-    <input type=submit value=Start>
+    <button type=submit>Start</button>
   </p>
 </form>
 {{- else -}}

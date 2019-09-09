@@ -26,13 +26,7 @@ func InsertFake(ctx context.Context, db *DB, factor int) error {
 }
 
 func insertFakeRoom(ctx context.Context, db *DB, factor int) error {
-	room := &Room{
-		Title: strings.TrimSuffix(oneOf(
-			gofakeit.Word(),
-			gofakeit.Sentence(1+rand.Intn(5)),
-			gofakeit.HipsterSentence(1+rand.Intn(5)),
-		), "."),
-	}
+	room := &Room{Title: FakeRoomTitle()}
 	if err := db.CreateRoom(ctx, room); err != nil {
 		return err
 	}
@@ -59,14 +53,8 @@ func insertFakeRoom(ctx context.Context, db *DB, factor int) error {
 			break
 		}
 		post.Serial++
-		post.Author = oneOf(gofakeit.Username(), gofakeit.Name())
-		post.Text = oneOf(
-			gofakeit.Paragraph(1, 1+rand.Intn(5), 1+rand.Intn(10), ""),
-			gofakeit.Sentence(1+rand.Intn(5)),
-			gofakeit.HipsterParagraph(1, 1+rand.Intn(5), 1+rand.Intn(10), ""),
-			gofakeit.HipsterSentence(1+rand.Intn(5)),
-			gofakeit.HackerPhrase(),
-		)
+		post.Author = FakeUserName()
+		post.Text = FakePostText()
 		_, err := db.posts.InsertOne(ctx, post)
 		if err != nil {
 			return err
@@ -84,6 +72,28 @@ func insertFakeRoom(ctx context.Context, db *DB, factor int) error {
 	log.Printf("store: inserted fake room %v %q with %v posts",
 		room.ID.Hex(), room.Title, post.Serial)
 	return nil
+}
+
+func FakeUserName() string {
+	return oneOf(gofakeit.Username(), gofakeit.Name())
+}
+
+func FakeRoomTitle() string {
+	return strings.TrimSuffix(oneOf(
+		gofakeit.Word(),
+		gofakeit.Sentence(1+rand.Intn(5)),
+		gofakeit.HipsterSentence(1+rand.Intn(5)),
+	), ".")
+}
+
+func FakePostText() string {
+	return oneOf(
+		gofakeit.Paragraph(1, 1+rand.Intn(5), 1+rand.Intn(10), ""),
+		gofakeit.Sentence(1+rand.Intn(5)),
+		gofakeit.HipsterParagraph(1, 1+rand.Intn(5), 1+rand.Intn(10), ""),
+		gofakeit.HipsterSentence(1+rand.Intn(5)),
+		gofakeit.HackerPhrase(),
+	)
 }
 
 func oneOf(ss ...string) string {
