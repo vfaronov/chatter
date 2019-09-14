@@ -246,7 +246,7 @@ func (b *bot) streamUpdates(ctx context.Context, ch chan<- string, streamURL str
 		}
 
 		sc := bufio.NewScanner(resp.Body)
-		sc.Split(splitEventStream)
+		sc.Split(scanMessages)
 		for sc.Scan() {
 			msg := sc.Bytes()
 			mark := string(markExp.Find(msg))
@@ -256,7 +256,6 @@ func (b *bot) streamUpdates(ctx context.Context, ch chan<- string, streamURL str
 			b.logf("got post %q from updates stream", mark)
 			ch <- mark
 		}
-		// TODO: we don't actually get here when the bot browses away
 		resp.Body.Close()
 		b.logf("event stream stopped at ID %v: %v", lastID, sc.Err())
 		if ctx.Err() != nil { // canceled by us, not broken by server
@@ -266,13 +265,13 @@ func (b *bot) streamUpdates(ctx context.Context, ch chan<- string, streamURL str
 	}
 }
 
-// splitEventStream is a bufio.SplitFunc that splits text/event-stream
+// scanMessages is a bufio.SplitFunc that splits text/event-stream
 // into individual messages.
-func splitEventStream(data []byte, atEOF bool) (advance int, token []byte, err error) {
+func scanMessages(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	if i := bytes.Index(data, []byte("\n\n")); i >= 0 {
 		return i + 2, data[:i], nil
 	}
-	if atEOF {
+	if atEOF && len(data) > 0 {
 		return len(data), data, nil
 	}
 	return 0, nil, nil
