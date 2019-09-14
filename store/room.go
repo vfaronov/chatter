@@ -13,6 +13,7 @@ import (
 type Room struct {
 	ID      primitive.ObjectID `bson:"_id,omitempty"`
 	Title   string
+	Author  string
 	Updated time.Time
 	Serial  uint64
 }
@@ -20,13 +21,23 @@ type Room struct {
 func (db *DB) CreateRoom(ctx context.Context, room *Room) error {
 	room.ID = primitive.NilObjectID
 	room.Updated = time.Now()
+	room.Serial = 1
 	res, err := db.rooms.InsertOne(ctx, room)
 	if err != nil {
 		// TODO: proper error wrapping? (here and elsewhere)
 		return err
 	}
 	room.ID = res.InsertedID.(primitive.ObjectID)
-	return nil
+	firstPost := &Post{
+		RoomID: room.ID,
+		Serial: room.Serial,
+		Type:   TypeNewRoom,
+		Author: room.Author,
+		Time:   room.Updated,
+	}
+	// TODO: eventually restore consistency if insertPost fails
+	// (detect zero posts in GetPosts*)
+	return db.insertPost(ctx, firstPost)
 }
 
 func (db *DB) GetRoom(ctx context.Context, id primitive.ObjectID) (*Room, error) {

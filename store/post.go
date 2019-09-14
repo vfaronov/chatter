@@ -14,19 +14,26 @@ type Post struct {
 	ID     primitive.ObjectID `bson:"_id,omitempty"`
 	RoomID primitive.ObjectID `bson:"roomId"`
 	Serial uint64
+	Type   PostType
 	Author string
 	Time   time.Time
 	Text   string
 }
 
-func (db *DB) CreatePost(ctx context.Context, post *Post) error {
-	post.ID = primitive.NilObjectID
-	post.Time = time.Now()
+type PostType uint8
 
+// TODO: use golang.org/x/tools/cmd/stringer?
+const (
+	TypeNormal PostType = iota
+	TypeNewRoom
+)
+
+func (db *DB) CreatePost(ctx context.Context, post *Post) error {
 	// Update the room to ensure that it exists, bump its update timestamp,
 	// and acquire the serial number for this post. Two posts will never get
 	// the same serial number because $inc on one master is atomic.
-	res1 := db.rooms.FindOneAndUpdate(ctx,
+	post.Time = time.Now()
+	res := db.rooms.FindOneAndUpdate(ctx,
 		bson.M{"_id": post.RoomID},
 		bson.M{
 			"$set": bson.M{"updated": post.Time},
@@ -37,7 +44,7 @@ func (db *DB) CreatePost(ctx context.Context, post *Post) error {
 	var room struct {
 		Serial uint64
 	}
-	err := res1.Decode(&room)
+	err := res.Decode(&room)
 	switch {
 	case err == mongo.ErrNoDocuments:
 		return ErrNotFound
@@ -48,6 +55,11 @@ func (db *DB) CreatePost(ctx context.Context, post *Post) error {
 
 	// Now insert the actual post. If this fails, we end up with slightly
 	// inconsistent room data, which is tolerable.
+	return db.insertPost(ctx, post)
+}
+
+func (db *DB) insertPost(ctx context.Context, post *Post) error {
+	post.ID = primitive.NilObjectID
 	res, err := db.posts.InsertOne(ctx, post)
 	if err != nil {
 		return err

@@ -24,12 +24,15 @@ func (s *Server) getRooms(w http.ResponseWriter, r *http.Request, ps httprouter.
 }
 
 func (s *Server) postRooms(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	if _, ok := s.userName(r); !ok {
+	name, ok := s.userName(r)
+	if !ok {
 		http.Error(w, "not logged in", http.StatusForbidden)
 		return
 	}
-	room := &store.Room{}
-	room.Title = r.Form.Get("title")
+	room := &store.Room{
+		Author: name,
+		Title:  r.Form.Get("title"),
+	}
 	if room.Title == "" {
 		http.Error(w, "missing title in form", http.StatusUnprocessableEntity)
 		return

@@ -26,7 +26,10 @@ func InsertFake(ctx context.Context, db *DB, factor int) error {
 }
 
 func insertFakeRoom(ctx context.Context, db *DB, factor int) error {
-	room := &Room{Title: FakeRoomTitle()}
+	room := &Room{
+		Title:  FakeRoomTitle(),
+		Author: FakeUserName(),
+	}
 	if err := db.CreateRoom(ctx, room); err != nil {
 		return err
 	}
