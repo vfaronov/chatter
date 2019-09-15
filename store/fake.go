@@ -38,6 +38,7 @@ func insertFakeRoom(ctx context.Context, db *DB, factor int) error {
 	// Begin up to factor days ago.
 	post := &Post{
 		RoomID: room.ID,
+		Serial: room.Serial,
 	}
 	now := time.Now()
 	post.Time = now.Add(-time.Duration(1+rand.Intn(factor)) * 24 * time.Hour)
