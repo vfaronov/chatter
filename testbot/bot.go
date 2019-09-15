@@ -202,7 +202,7 @@ func (b *bot) room() {
 			b.must("input text", form.Input("text", text))
 			b.must("submit", form.Submit())
 			expectOwn = mark
-			ownTimeout = time.After(1 * time.Second)
+			ownTimeout = time.After(3 * time.Second)
 
 		case <-ownTimeout:
 			b.panicf("didn't get my own post %q from the stream", expectOwn)
