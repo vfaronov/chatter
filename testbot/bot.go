@@ -1,7 +1,7 @@
 // Package testbot implements fake users (bots) that sign up to Chatter, browse,
 // submit and receive posts, roughly imitating actions of human users, and thereby
 // serving as synthetic load for testing Chatter. They also do some checks
-// on Chatter's functionality, thus doubling as rudimentary end-to-end tests.
+// on Chatter's functionality, thus doubling as an end-to-end test suite.
 // Check failures are reported simply by panicking.
 package testbot
 
@@ -17,6 +17,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/headzoo/surf/browser"
 	"github.com/vfaronov/chatter/store"
 	"gopkg.in/headzoo/surf.v1"
@@ -173,6 +174,7 @@ func (b *bot) room() {
 	updates := b.updates(ctx)
 
 	var (
+		marks      []string
 		expectOwn  string
 		ownTimeout <-chan time.Time
 	)
@@ -181,12 +183,14 @@ func (b *bot) room() {
 		b.logf("just chilling here for %v or until a new post", dur)
 		select {
 		case mark := <-updates:
+			marks = append(marks, mark)
 			if mark == expectOwn {
 				ownTimeout = nil
 			}
 
 		case <-time.After(dur):
 			if rand.Intn(2) == 0 {
+				b.checkPosts(marks)
 				b.logf("got bored, heading back to rooms list")
 				b.must("browse", b.browser.Click("nav a"))
 				return
@@ -275,6 +279,42 @@ func scanMessages(data []byte, atEOF bool) (advance int, token []byte, err error
 		return len(data), data, nil
 	}
 	return 0, nil, nil
+}
+
+// checkPosts checks that the expected posts (received from the updates stream),
+// or at least some part of them (limited by page size), appear on the room page,
+// in the same order, without intervening posts (preceding/following posts are OK).
+// TODO: This is actually not guaranteed because posts with serial:5 and serial:6
+// will be shown in that order on the room page but might arrive in the reverse
+// order from MongoDB's change stream.
+func (b *bot) checkPosts(expected []string) {
+	if len(expected) == 0 {
+		// Didn't stay on the room page for long enough to get any updates.
+		return
+	}
+	b.logf("checking %v for expected posts: %v", b.browser.Url(), expected)
+	// Not b.browser.Reload() because that would re-submit the last post.
+	b.must("reload room page", b.browser.Open(b.browser.Url().String()))
+	actual := b.browser.Find(".post").Map(func(i int, post *goquery.Selection) string {
+		return markExp.FindString(post.Text())
+	})
+	i := len(expected) - 1
+	j := len(actual) - 1
+	// Skip any actual marks that may have been posted while we were reloading.
+	for i >= 0 {
+		if expected[i] == actual[j] {
+			break
+		}
+		i--
+	}
+	// Walk expected and actual marks backwards, making sure they match.
+	for i >= 0 && j >= 0 {
+		if expected[i] != actual[j] {
+			b.panicf("mismatch! actual posts: %v", actual)
+		}
+		i--
+		j--
+	}
 }
 
 func generatePost() (mark, text string) {
