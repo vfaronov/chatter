@@ -154,7 +154,7 @@ func (b *bot) rooms() {
 		b.must("submit", form.Submit())
 		return
 	}
-	link := links[rand.Intn(len(links))]
+	link := pickLink(links)
 	b.logf("following link to %q = %v", link.Text, link.Url())
 	b.must("browse", b.browser.Open(link.Url().String()))
 }
@@ -315,6 +315,16 @@ func (b *bot) checkPosts(expected []string) {
 		i--
 		j--
 	}
+}
+
+// pickLink returns a random one of links, giving more weight to the earlier ones.
+func pickLink(links []*browser.Link) *browser.Link {
+	for i, link := range links {
+		if rand.Intn(5) == 0 || i == len(links)-1 {
+			return link
+		}
+	}
+	return nil
 }
 
 func generatePost() (mark, text string) {
