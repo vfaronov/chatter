@@ -67,6 +67,7 @@ func (s *Server) renderPage(
 
 func (s *Server) renderFragment(
 	w http.ResponseWriter, r *http.Request,
+	// TODO: replace keyval with nested map[string]interface{}
 	tpl *template.Template, name string, keyval ...interface{},
 ) {
 	userName, _ := s.userName(r) // may be empty

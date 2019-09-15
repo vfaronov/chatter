@@ -78,7 +78,7 @@ func (s *Server) postSignup(w http.ResponseWriter, r *http.Request, ps httproute
 		reqFatalf(w, r, err, "cannot save session")
 		return
 	}
-	redir := r.Form.Get("redir")
+	redir := r.Form.Get("redir") // TODO: use Referer instead (here and elsewhere)
 	if redir == "" {
 		redir = "/rooms/"
 	}
