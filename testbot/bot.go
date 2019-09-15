@@ -211,32 +211,39 @@ func (b *bot) room() {
 }
 
 func (b *bot) updates(ctx context.Context) <-chan string {
-	u, ok := b.browser.Find("[ic-sse-src]").Attr("ic-sse-src")
+	// Initialize the request here because b.browser is not safe for concurrent use.
+	url, ok := b.browser.Find("[ic-sse-src]").Attr("ic-sse-src")
 	if !ok {
-		b.panicf("no link to SSE here")
+		b.panicf("no link to SSE here: %v", b.browser.Body())
 	}
-	u, err := b.browser.ResolveStringUrl(u)
+	url, err := b.browser.ResolveStringUrl(url)
 	b.must("resolve SSE URL", err)
+	req, err := http.NewRequest("GET", url, nil)
+	b.must("create request", err)
+	req.Header.Set("User-Agent", "testbot")
+	req.Header.Set("Referer", b.browser.Url().String())
+	for _, cookie := range b.browser.SiteCookies() {
+		req.AddCookie(cookie)
+	}
+
+	// Insert a delay, as might be caused by a slow network. This allows us
+	// to check the window between opening the room page and the updates stream.
+	dur := b.delay() / 10
+	b.logf("sleeping for %v before opening event stream", dur)
+	time.Sleep(dur)
+
 	ch := make(chan string, 16)
-	go b.streamUpdates(ctx, ch, u)
+	go b.streamUpdates(ctx, ch, req)
 	return ch
 }
 
-func (b *bot) streamUpdates(ctx context.Context, ch chan<- string, streamURL string) {
+func (b *bot) streamUpdates(ctx context.Context, ch chan<- string, req *http.Request) {
 	defer close(ch)
 	var lastID string
 	for {
-		// TODO: insert a small delay (such as would be caused by a slow network)
-		b.logf("opening stream %v (last event ID = %q)", streamURL, lastID)
-		req, err := http.NewRequest("GET", streamURL, nil)
-		b.must("create request", err)
-		req.Header.Set("User-Agent", "testbot")
-		req.Header.Set("Referer", b.browser.Url().String())
+		b.logf("opening stream %v (Last-Event-ID: %v)", req.URL, lastID)
 		if lastID != "" {
 			req.Header.Set("Last-Event-Id", lastID)
-		}
-		for _, cookie := range b.browser.SiteCookies() {
-			req.AddCookie(cookie)
 		}
 		resp, err := http.DefaultClient.Do(req.WithContext(ctx))
 		if err != nil && ctx.Err() != nil {
