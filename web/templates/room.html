@@ -20,7 +20,7 @@
   {{range .Posts -}}
   {{block "post" . -}}
   {{- /* TODO: use named Type* constants from store */ -}}
-  <div class="post {{if ne .Type 0}}special{{end}}" id=post{{.Serial}}>
+  <div class="post {{if .Type}}special{{else}}normal{{end}}" id=post{{.Serial}}>
     <span class=author>{{.Author}}</span> {{if eq .Type 1}}created room{{end}}
     <a class=time title=permalink href="?before={{addUint64 .Serial 10}}#post{{.Serial}}">
       {{- /* TODO: nicer time rendering, timezone-aware */ -}}

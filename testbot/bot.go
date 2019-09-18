@@ -302,17 +302,19 @@ func (b *bot) checkPosts(expected []string) {
 	b.logf("checking %v for expected posts: %v", b.browser.Url(), expected)
 	// Not b.browser.Reload() because that would re-submit the last post.
 	b.must("reload room page", b.browser.Open(b.browser.Url().String()))
-	actual := b.browser.Find(".post").Map(func(i int, post *goquery.Selection) string {
-		return markExp.FindString(post.Text())
-	})
+	actual := b.browser.Find(".post.normal").Map(
+		func(i int, post *goquery.Selection) string {
+			return markExp.FindString(post.Text())
+		},
+	)
 	i := len(expected) - 1
 	j := len(actual) - 1
 	// Skip any actual marks that may have been posted while we were reloading.
-	for i >= 0 {
+	for j >= 0 {
 		if expected[i] == actual[j] {
 			break
 		}
-		i--
+		j--
 	}
 	// Walk expected and actual marks backwards, making sure they match.
 	for i >= 0 && j >= 0 {
