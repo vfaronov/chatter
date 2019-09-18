@@ -79,6 +79,7 @@ func (b *bot) logf(format string, v ...interface{}) {
 
 func (b *bot) panicf(format string, v ...interface{}) {
 	b.logf(format, v...)
+	b.logf("current page: %v", b.browser.Body())
 	panic(fmt.Sprintf(format, v...))
 }
 
@@ -214,7 +215,7 @@ func (b *bot) updates(ctx context.Context) <-chan string {
 	// Initialize the request here because b.browser is not safe for concurrent use.
 	url, ok := b.browser.Find("[ic-sse-src]").Attr("ic-sse-src")
 	if !ok {
-		b.panicf("no link to SSE here: %v", b.browser.Body())
+		b.panicf("no link to SSE here")
 	}
 	url, err := b.browser.ResolveStringUrl(url)
 	b.must("resolve SSE URL", err)

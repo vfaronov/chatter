@@ -70,7 +70,7 @@ func (db *DB) insertPost(ctx context.Context, post *Post) error {
 
 func (db *DB) GetPostsSince(
 	ctx context.Context,
-	roomID primitive.ObjectID,
+	room *Room,
 	since uint64,
 	n int64,
 ) ([]*Post, error) { // TODO: []Post?
@@ -80,7 +80,7 @@ func (db *DB) GetPostsSince(
 	}
 	cur, err := db.posts.Find(ctx,
 		bson.M{
-			"roomId": roomID,
+			"roomId": room.ID,
 			"serial": bson.M{"$gt": since},
 		},
 		opts,
@@ -97,19 +97,20 @@ func (db *DB) GetPostsSince(
 			return posts, err
 		}
 		posts = append(posts, post)
+		room.fixup(post)
 	}
 	return posts, cur.Err()
 }
 
 func (db *DB) GetPostsBefore(
 	ctx context.Context,
-	roomID primitive.ObjectID,
+	room *Room,
 	before uint64,
 	n int64,
 ) ([]*Post, error) { // TODO: []Post?
 	cur, err := db.posts.Find(ctx,
 		bson.M{
-			"roomId": roomID,
+			"roomId": room.ID,
 			"serial": bson.M{"$lt": before},
 		},
 		options.Find().
@@ -133,6 +134,7 @@ func (db *DB) GetPostsBefore(
 		}
 		posts[i] = post
 		i--
+		room.fixup(post)
 	}
 	return posts[i+1:], cur.Err()
 }

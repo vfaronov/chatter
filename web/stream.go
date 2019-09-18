@@ -38,7 +38,7 @@ func (s *Server) getRoomUpdates(w http.ResponseWriter, r *http.Request, room *st
 
 	var posts []*store.Post
 	if since > 0 {
-		posts, err = s.db.GetPostsSince(ctx, room.ID, since, 0)
+		posts, err = s.db.GetPostsSince(ctx, room, since, 0)
 		if err != nil {
 			reqFatalf(w, r, err, "failed to get initial posts")
 			return

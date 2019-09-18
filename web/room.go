@@ -72,9 +72,9 @@ func (s *Server) getRoom(w http.ResponseWriter, r *http.Request, room *store.Roo
 	const pageSize = 20
 	ctx := r.Context()
 	if before > 0 {
-		posts, err = s.db.GetPostsBefore(ctx, room.ID, before, pageSize)
+		posts, err = s.db.GetPostsBefore(ctx, room, before, pageSize)
 	} else {
-		posts, err = s.db.GetPostsSince(ctx, room.ID, since, pageSize)
+		posts, err = s.db.GetPostsSince(ctx, room, since, pageSize)
 	}
 	if err != nil {
 		reqFatalf(w, r, err, "failed to get posts")

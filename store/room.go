@@ -18,6 +18,17 @@ type Room struct {
 	Serial  uint64
 }
 
+// fixup updates fields of room in case post was created after room had already
+// been fetched from the database.
+func (room *Room) fixup(post *Post) {
+	if post.Serial > room.Serial {
+		room.Serial = post.Serial
+	}
+	if post.Time.After(room.Updated) {
+		room.Updated = post.Time
+	}
+}
+
 func (db *DB) CreateRoom(ctx context.Context, room *Room) error {
 	room.ID = primitive.NilObjectID
 	room.Updated = time.Now()
