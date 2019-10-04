@@ -24,7 +24,7 @@ func main() {
 
 	ctx := context.Background()
 
-	db, err := store.ConnectDB(ctx, config.StoreURI)
+	db, err := store.ConnectDB(ctx, config.StoreURI, false)
 	if err != nil {
 		log.Fatalf("failed to connect to storage DB: %v", err)
 	}

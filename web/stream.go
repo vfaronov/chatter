@@ -33,8 +33,8 @@ func (s *Server) getRoomUpdates(w http.ResponseWriter, r *http.Request, room *st
 
 	// Subscribe to new posts and let the channel buffer hold them for us
 	// while we're catching up with everything already posted since.
-	newPosts := s.db.StreamPosts(room.ID)
-	defer s.db.StopStreaming(newPosts)
+	newPosts := s.db.StreamRoom(room.ID)
+	defer s.db.CancelStream(newPosts)
 
 	var posts []*store.Post
 	if since > 0 {
@@ -75,8 +75,8 @@ loop: // Send new posts as they arrive.
 		case post = <-newPosts:
 		}
 		if post == nil {
-			// If we were too slow and our buffer filled up,
-			// the pump may have detached us.
+			// The pump detaches listeners that are too slow to process
+			// their buffers, as well as on server shutdown.
 			err = errors.New("DB abandoned listener")
 			break loop
 		}

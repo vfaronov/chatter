@@ -50,7 +50,6 @@ See also `-help` for each command.
 
 * more tests
 * metrics
-* graceful shutdown
 * dependency management
 * CSRF protection
 * paging in room list

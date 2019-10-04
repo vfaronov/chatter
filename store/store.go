@@ -8,12 +8,14 @@ import (
 	"net/url"
 	"strings"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func ConnectDB(ctx context.Context, uri string) (*DB, error) {
+// ConnectDB returns a DB connected to the given MongoDB uri.
+// If stream is true, the returned DB also runs a set of background goroutines
+// that enable streaming new posts via StreamRoom.
+func ConnectDB(ctx context.Context, uri string, stream bool) (*DB, error) {
 	// MongoDB's connection string URIs include database name:
 	// https://docs.mongodb.com/manual/reference/connection-string/ --
 	// but the driver only uses it for authentication. To avoid duplicating
@@ -44,11 +46,12 @@ func ConnectDB(ctx context.Context, uri string) (*DB, error) {
 	db.rooms = db.client.Database(dbname).Collection("rooms")
 	db.posts = db.client.Database(dbname).Collection("posts")
 
-	// TODO: do not run pump in chattertool
-	db.listeners.byRoom = make(map[primitive.ObjectID]map[chan *Post]struct{})
-	db.listeners.byChannel = make(map[chan *Post]primitive.ObjectID)
-	db.listeners.requests = make(chan listenReq, 1024)
-	go db.runPump(ctx)
+	if stream {
+		db.pump, err = newPump(ctx, db)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	return db, nil
 }
@@ -58,14 +61,13 @@ type DB struct {
 	users  *mongo.Collection
 	rooms  *mongo.Collection
 	posts  *mongo.Collection
+	*pump
+}
 
-	listeners struct {
-		// byRoom is for sending a new post to all listening to the room.
-		// byChannel is for locating the room ID to detach a listener.
-		// These maps are accessed only by the goroutine that consumes requests.
-		byRoom    map[primitive.ObjectID]map[chan *Post]struct{}
-		byChannel map[chan *Post]primitive.ObjectID
-		requests  chan listenReq
+func (db *DB) Disconnect(ctx context.Context) {
+	log.Printf("store: disconnecting from MongoDB")
+	if err := db.client.Disconnect(ctx); err != nil {
+		log.Printf("store: failed to disconnect: %v", err)
 	}
 }
 
