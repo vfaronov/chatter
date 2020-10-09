@@ -28,8 +28,7 @@ Initialize the database with some fake data:
 
     go run github.com/vfaronov/chatter/cmd/chattertool -init-db -insert-fake 100
     
-The Web server must be started from the repo root because static files
-and templates are not yet compiled into the binary:
+Start the Web server:
 
     go run github.com/vfaronov/chatter/cmd/chatter -key mysecret
     
