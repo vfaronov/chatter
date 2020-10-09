@@ -1,17 +1,23 @@
-.PHONY: devel lint bin chatter chattertool chatterbot
+.PHONY: check fakebuild lint bin chatter chattertool chatterbot
 
-devel: bin lint
+check: fakebuild lint
+
+fakebuild:
+	go build -mod=readonly -o /dev/null github.com/vfaronov/chatter/cmd/chatter
+	go build -mod=readonly -o /dev/null github.com/vfaronov/chatter/cmd/chattertool
+	go build -mod=readonly -o /dev/null github.com/vfaronov/chatter/cmd/chatterbot
 
 bin: chatter chattertool chatterbot
 
 chatter:
-	go install github.com/vfaronov/chatter/cmd/chatter
+	go build github.com/vfaronov/chatter/cmd/chatter
+	rice append --exec=chatter github.com/vfaronov/chatter/web
 
 chattertool:
-	go install github.com/vfaronov/chatter/cmd/chattertool
+	go build github.com/vfaronov/chatter/cmd/chattertool
 
 chatterbot:
-	go install github.com/vfaronov/chatter/cmd/chatterbot
+	go build github.com/vfaronov/chatter/cmd/chatterbot
 
 lint:
 	golangci-lint run

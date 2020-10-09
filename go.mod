@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/DataDog/zstd v1.4.4 // indirect
+	github.com/GeertJohan/go.rice v1.0.0
 	github.com/PuerkitoBio/goquery v1.5.0
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/go-stack/stack v1.8.0 // indirect

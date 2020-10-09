@@ -1,18 +1,13 @@
 package web
 
 import (
-	"html/template"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/vfaronov/chatter/store"
 )
 
-var (
-	roomsTpl = template.Must(template.ParseFiles(
-		"web/templates/page.html",
-		"web/templates/rooms.html"))
-)
+var roomsTpl = loadPageTemplate("rooms.html")
 
 func (s *Server) getRooms(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	rooms, err := s.db.GetRooms(r.Context())

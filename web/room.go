@@ -3,7 +3,6 @@ package web
 import (
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 
@@ -12,13 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-var (
-	// TODO: embed templates into binary
-	roomTpl = template.Must(template.New("page.html").Funcs(funcMap).ParseFiles(
-		"web/templates/page.html",
-		"web/templates/room.html",
-	))
-)
+var roomTpl = loadPageTemplate("room.html")
 
 func (s *Server) withRoom(
 	next func(w http.ResponseWriter, r *http.Request, room *store.Room),

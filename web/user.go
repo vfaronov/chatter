@@ -2,7 +2,6 @@ package web
 
 import (
 	"fmt"
-	"html/template"
 	"net/http"
 
 	"github.com/gorilla/sessions"
@@ -10,12 +9,7 @@ import (
 	"github.com/vfaronov/chatter/store"
 )
 
-var (
-	signupTpl = template.Must(template.ParseFiles(
-		"web/templates/page.html",
-		"web/templates/signup.html",
-	))
-)
+var signupTpl = loadPageTemplate("signup.html")
 
 func (s *Server) session(r *http.Request) *sessions.Session {
 	// Gorilla's docs suggest checking error and responding with 500;

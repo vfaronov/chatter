@@ -5,9 +5,15 @@ import (
 	"html/template"
 	"net/http"
 
+	rice "github.com/GeertJohan/go.rice"
 	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 	"github.com/vfaronov/chatter/store"
+)
+
+var (
+	static    = rice.MustFindBox("static")
+	templates = rice.MustFindBox("templates")
 )
 
 func NewServer(addr string, db *store.DB, key []byte) *Server {
@@ -18,7 +24,7 @@ func NewServer(addr string, db *store.DB, key []byte) *Server {
 	}
 
 	r := httprouter.New()
-	r.GET("/chatter.css", s.static("chatter.css"))
+	r.ServeFiles("/static/*filepath", static.HTTPBox())
 	r.GET("/signup/", s.getSignup)
 	r.POST("/signup/", s.postSignup)
 	r.POST("/logout/", s.postLogout)
@@ -37,13 +43,6 @@ type Server struct {
 	*http.Server
 	db           *store.DB
 	sessionStore *sessions.CookieStore
-}
-
-func (s *Server) static(basename string) httprouter.Handle {
-	name := "web/static/" + basename
-	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		http.ServeFile(w, r, name)
-	}
 }
 
 func withForm(next http.Handler) http.Handler {
@@ -104,3 +103,10 @@ type key int
 const (
 	reqIDKey key = iota
 )
+
+func loadPageTemplate(name string) *template.Template {
+	tpl := template.New("page.html").Funcs(funcMap)
+	tpl = template.Must(tpl.Parse(templates.MustString("page.html")))
+	tpl = template.Must(tpl.Parse(templates.MustString(name)))
+	return tpl
+}
