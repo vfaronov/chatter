@@ -19,7 +19,7 @@ without JavaScript.
 
 ## How to run
 
-You need Go 1.12+ and a MongoDB 3.6+ replica set. Here's a quick way to spin up a single-node MongoDB replica set on `localhost:27017` (without root):
+You need Go 1.16+ and a MongoDB 3.6+ replica set. Here's a quick way to spin up a single-node MongoDB replica set on `localhost:27017` (without root):
 
     mongod --dbpath /some/empty/dir --replSet chatter
     mongo --eval 'rs.initiate({_id: "chatter", members: [{_id: 0, host: "localhost:27017"}]})'

@@ -1,12 +1,12 @@
 module github.com/vfaronov/chatter
 
-go 1.12
+go 1.16
 
 require (
 	github.com/DataDog/zstd v1.4.4 // indirect
-	github.com/GeertJohan/go.rice v1.0.0
 	github.com/PuerkitoBio/goquery v1.5.0
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-cmp v0.3.1 // indirect

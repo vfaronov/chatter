@@ -11,7 +11,6 @@ bin: chatter chattertool chatterbot
 
 chatter:
 	go build github.com/vfaronov/chatter/cmd/chatter
-	rice append --exec=chatter github.com/vfaronov/chatter/web
 
 chattertool:
 	go build github.com/vfaronov/chatter/cmd/chattertool

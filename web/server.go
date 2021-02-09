@@ -1,19 +1,22 @@
 package web
 
 import (
+	"embed"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"net/http"
 
-	rice "github.com/GeertJohan/go.rice"
 	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 	"github.com/vfaronov/chatter/store"
 )
 
 var (
-	static    = rice.MustFindBox("static")
-	templates = rice.MustFindBox("templates")
+	//go:embed templates static
+	assets       embed.FS
+	templates, _ = fs.Sub(assets, "templates")
+	static, _    = fs.Sub(assets, "static")
 )
 
 func NewServer(addr string, db *store.DB, key []byte) *Server {
@@ -24,7 +27,7 @@ func NewServer(addr string, db *store.DB, key []byte) *Server {
 	}
 
 	r := httprouter.New()
-	r.ServeFiles("/static/*filepath", static.HTTPBox())
+	r.ServeFiles("/static/*filepath", http.FS(static))
 	r.GET("/signup/", s.getSignup)
 	r.POST("/signup/", s.postSignup)
 	r.POST("/logout/", s.postLogout)
@@ -105,8 +108,5 @@ const (
 )
 
 func loadPageTemplate(name string) *template.Template {
-	tpl := template.New("page.html").Funcs(funcMap)
-	tpl = template.Must(tpl.Parse(templates.MustString("page.html")))
-	tpl = template.Must(tpl.Parse(templates.MustString(name)))
-	return tpl
+	return template.Must(template.New("page.html").Funcs(funcMap).ParseFS(templates, "page.html", name))
 }
