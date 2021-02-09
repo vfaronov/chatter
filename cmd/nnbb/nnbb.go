@@ -11,9 +11,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/vfaronov/chatter/config"
-	"github.com/vfaronov/chatter/store"
-	"github.com/vfaronov/chatter/web"
+	"github.com/vfaronov/nnbb/config"
+	"github.com/vfaronov/nnbb/store"
+	"github.com/vfaronov/nnbb/web"
 )
 
 func main() {

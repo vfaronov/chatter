@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/vfaronov/chatter/store"
+	"github.com/vfaronov/nnbb/store"
 )
 
 func (s *Server) getRoomUpdates(w http.ResponseWriter, r *http.Request, room *store.Room) {

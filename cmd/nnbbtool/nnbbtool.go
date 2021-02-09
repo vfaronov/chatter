@@ -1,4 +1,4 @@
-// Chattertool performs administrative operations on a Chatter instance.
+// nnbbtool performs administrative operations on an nnBB instance.
 package main
 
 import (
@@ -6,8 +6,8 @@ import (
 	"flag"
 	"log"
 
-	"github.com/vfaronov/chatter/config"
-	"github.com/vfaronov/chatter/store"
+	"github.com/vfaronov/nnbb/config"
+	"github.com/vfaronov/nnbb/store"
 )
 
 func main() {

@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/vfaronov/chatter/store"
+	"github.com/vfaronov/nnbb/store"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

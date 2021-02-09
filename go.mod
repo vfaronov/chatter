@@ -1,4 +1,4 @@
-module github.com/vfaronov/chatter
+module github.com/vfaronov/nnbb
 
 go 1.16
 

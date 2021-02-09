@@ -12,7 +12,7 @@ import (
 
 // withReqID is a middleware that assigns a random ID to the request's context,
 // so that log lines pertaining to it can be correlated, and also logs the request.
-// Headers like X-Request-ID are not considered, because Chatter is supposed to be
+// Headers like X-Request-ID are not considered, because nnBB is supposed to be
 // a user-facing service.
 func withReqID(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

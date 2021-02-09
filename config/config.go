@@ -1,5 +1,5 @@
 // Package config registers configuration flags that are common
-// to all Chatter binaries.
+// to all nnBB binaries.
 package config
 
 import (
@@ -12,6 +12,6 @@ var (
 
 func init() {
 	flag.StringVar(&StoreURI, "store-uri",
-		"mongodb://localhost:27017/chatter?replicaSet=chatter",
+		"mongodb://localhost:27017/nnbb?replicaSet=nnbb",
 		"storage MongoDB connection string (must include DB name and replica set)")
 }

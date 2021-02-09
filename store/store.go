@@ -34,7 +34,7 @@ func ConnectDB(ctx context.Context, uri string, stream bool) (*DB, error) {
 	db := &DB{}
 	db.client, err = mongo.Connect(ctx, options.Client().
 		ApplyURI(uri).
-		SetAppName("chatter"))
+		SetAppName("nnbb"))
 	if err != nil {
 		return nil, err
 	}

@@ -6,7 +6,7 @@ import (
 
 	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
-	"github.com/vfaronov/chatter/store"
+	"github.com/vfaronov/nnbb/store"
 )
 
 var signupTpl = loadPageTemplate("signup.html")

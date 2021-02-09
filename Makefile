@@ -1,22 +1,22 @@
-.PHONY: check fakebuild lint bin chatter chattertool chatterbot
+.PHONY: check fakebuild lint bin nnbb nnbbtool testbot
 
 check: fakebuild lint
 
 fakebuild:
-	go build -mod=readonly -o /dev/null github.com/vfaronov/chatter/cmd/chatter
-	go build -mod=readonly -o /dev/null github.com/vfaronov/chatter/cmd/chattertool
-	go build -mod=readonly -o /dev/null github.com/vfaronov/chatter/cmd/chatterbot
+	go build -mod=readonly -o /dev/null github.com/vfaronov/nnbb/cmd/nnbb
+	go build -mod=readonly -o /dev/null github.com/vfaronov/nnbb/cmd/nnbbtool
+	go build -mod=readonly -o /dev/null github.com/vfaronov/nnbb/cmd/testbot
 
-bin: chatter chattertool chatterbot
+bin: nnbb nnbbtool testbot
 
-chatter:
-	go build github.com/vfaronov/chatter/cmd/chatter
+nnbb:
+	go build github.com/vfaronov/nnbb/cmd/nnbb
 
-chattertool:
-	go build github.com/vfaronov/chatter/cmd/chattertool
+nnbbtool:
+	go build github.com/vfaronov/nnbb/cmd/nnbbtool
 
-chatterbot:
-	go build github.com/vfaronov/chatter/cmd/chatterbot
+testbot:
+	go build github.com/vfaronov/nnbb/cmd/testbot
 
 lint:
 	golangci-lint run

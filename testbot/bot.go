@@ -1,7 +1,7 @@
-// Package testbot implements fake users (bots) that sign up to Chatter, browse,
+// Package testbot implements fake users (bots) that sign up to nnBB, browse,
 // submit and receive posts, roughly imitating actions of human users, and thereby
-// serving as synthetic load for testing Chatter. They also do some checks
-// on Chatter's functionality, thus doubling as an end-to-end test suite.
+// serving as synthetic load for testing nnBB. They also do some checks
+// on nnBB's functionality, thus doubling as an end-to-end test suite.
 // Check failures are reported simply by panicking.
 package testbot
 
@@ -19,7 +19,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/headzoo/surf/browser"
-	"github.com/vfaronov/chatter/store"
+	"github.com/vfaronov/nnbb/store"
 	"gopkg.in/headzoo/surf.v1"
 )
 

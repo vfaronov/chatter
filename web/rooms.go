@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/vfaronov/chatter/store"
+	"github.com/vfaronov/nnbb/store"
 )
 
 var roomsTpl = loadPageTemplate("rooms.html")

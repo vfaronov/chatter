@@ -1,4 +1,4 @@
-// Chatterbot runs a herd of test bots against a Chatter instance.
+// testbot runs a herd of test bots against an nnBB instance.
 package main
 
 import (
@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/vfaronov/chatter/testbot"
+	"github.com/vfaronov/nnbb/testbot"
 )
 
 func main() {
@@ -21,7 +21,7 @@ func main() {
 		seed     int64
 	)
 	flag.StringVar(&entryURL, "entry-url", "http://localhost:10242/signup/",
-		"URL of the signup page of the Chatter instance to test")
+		"URL of the signup page of the nnBB instance to test")
 	flag.IntVar(&n, "n", 100, "number of concurrent users to simulate")
 	flag.Float64Var(&rate, "rate", 1.0,
 		"speedup (> 1) / slowdown factor for each user")
