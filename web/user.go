@@ -35,8 +35,7 @@ func (s *Server) postSignup(w http.ResponseWriter, r *http.Request, ps httproute
 		Password: r.Form.Get("password"),
 	}
 	if user.Name == "" || user.Password == "" {
-		http.Error(w, fmt.Sprintf("form must contain name and password"),
-			http.StatusUnprocessableEntity)
+		http.Error(w, "form must contain name and password", http.StatusUnprocessableEntity)
 		return
 	}
 
