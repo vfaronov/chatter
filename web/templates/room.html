@@ -5,61 +5,61 @@
 {{end}}
 
 {{define "body"}}
-<div {{if not .P.Following}}ic-sse-src="updates/?since={{.P.LastPost.Serial}}"
-     ic-swap-style="append"{{end}}>
-  {{block "posts" . -}}
+<div {{if not .P.Following}}
+     ic-sse-src="updates/?since={{.P.LastPost.Serial}}" ic-swap-style="append"
+     {{end}}>
+  {{block "posts" .}}
 
-  {{if .P.Preceding -}}
-  <div class="post placeholder" id=older ic-enhance=true>
-    <a href="?before={{.P.FirstPost.Serial}}"
-       ic-target="#older" ic-replace-target=true ic-push-url=false
-       >...older posts...</a>
-    ({{.P.Preceding}} total)
-  </div>
-  {{- end}}
+    {{if .P.Preceding}}
+      <div class="post placeholder" id=older ic-enhance=true>
+        <a href="?before={{.P.FirstPost.Serial}}"
+           ic-target="#older" ic-replace-target=true ic-push-url=false
+           >...older posts...</a>
+        ({{.P.Preceding}} total)
+      </div>
+    {{end}}
 
-  {{range .P.Posts -}}
-  {{block "post" . -}}
-  {{- /* TODO: use named Type* constants from store */ -}}
-  <div class="post {{if .Type}}special{{else}}normal{{end}}" id=post{{.Serial}}>
-    <span class=author>{{.Author}}</span> {{if eq .Type 1}}created room{{end}}
-    <a class=time title=permalink href="?before={{addUint64 .Serial 10}}#post{{.Serial}}">
-      {{- /* TODO: nicer time rendering, timezone-aware */ -}}
-      {{.Time.Format "2006 Jan 2 15:04"}}
-    </a>
-    {{if eq .Type 0 -}}
-    <p>{{.Text}}</p>
-    {{- end}}
-  </div>
-  {{- end}}
-  {{- end}}
+    {{range .P.Posts}}
+      {{block "post" .}}
+        {{- /* TODO: use named Type* constants from store */ -}}
+        <div class="post {{if .Type}} special {{else}} normal {{end}}" id=post{{.Serial}}>
+          <span class=author>{{.Author}}</span> {{if eq .Type 1}} created room {{end}}
+          <a class=time title=permalink href="?before={{addUint64 .Serial 10}}#post{{.Serial}}">
+            {{- /* TODO: nicer time rendering, timezone-aware */ -}}
+            {{.Time.Format "2006 Jan 2 15:04"}}
+          </a>
+          {{if eq .Type 0}}
+            <p>{{.Text}}</p>
+          {{end}}
+        </div>
+      {{end}}
+    {{end}}
 
-  {{if .P.Following -}}
-  <div class="post placeholder" id=newer ic-enhance=true>
-    <a href="?since={{.P.LastPost.Serial}}"
-       ic-target="#newer" ic-replace-target=true ic-push-url=false
-       >...newer posts...</a>
-    ({{.P.Following}} total)
-  </div>
-  {{- end}}
+    {{if .P.Following}}
+      <div class="post placeholder" id=newer ic-enhance=true>
+        <a href="?since={{.P.LastPost.Serial}}"
+           ic-target="#newer" ic-replace-target=true ic-push-url=false
+           >...newer posts...</a>
+        ({{.P.Following}} total)
+      </div>
+    {{end}}
 
-  {{- end}}
+  {{end}}
 </div>
 
-{{block "postform" . -}}
-<form id=newpost class=post method=post
-      ic-post-to="." ic-replace-target=true>
-  {{if .P.Following -}}
-  <div><a href=".">Go to latest discussion</a></div>
-  {{- else if eq .User "" -}}
-  <div><a href="/signup/?redir={{.URL}}">Log in or sign up</a>
-  to participate in this discussion</div>
-  {{- else -}}
-  <div><span class=author>{{.User}}</span></div>
-  <p><textarea name=text required></textarea> <button type=submit>Post</button></p>
-  {{- end}}
-  </div>
-</form>
-{{- end}}
+{{block "postform" .}}
+  <form id=newpost class=post method=post ic-post-to="." ic-replace-target=true>
+    {{if .P.Following}}
+      <div><a href=".">Go to latest discussion</a></div>
+    {{else if eq .User ""}}
+      <div><a href="/signup/?redir={{.URL}}">Log in or sign up</a>
+      to participate in this discussion</div>
+    {{else}}
+      <div><span class=author>{{.User}}</span></div>
+      <p><textarea name=text required></textarea> <button type=submit>Post</button></p>
+    {{end}}
+    </div>
+  </form>
+{{end}}
 
 {{end}}

@@ -13,16 +13,16 @@
   </head>
 
   <body>
-    {{if .User -}}
-    <form class=userinfo action="/logout/" method=post>
-      <span class=author>{{.User}}</span> <button type=submit>log out</button>
-      <input type=hidden name=redir value="{{.URL}}">
-    </form>
-    {{- else -}}
-    <div class=userinfo>
-      <a href="/signup/?redir={{.URL}}">sign up</a>
-    </div>
-    {{- end}}
+    {{if .User}}
+      <form class=userinfo action="/logout/" method=post>
+        <span class=author>{{.User}}</span> <button type=submit>log out</button>
+        <input type=hidden name=redir value="{{.URL}}">
+      </form>
+    {{else}}
+      <div class=userinfo>
+        <a href="/signup/?redir={{.URL}}">sign up</a>
+      </div>
+    {{end}}
 
     {{block "nav" .}}{{end}}
 
