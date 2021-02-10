@@ -1,6 +1,7 @@
 package web
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -52,14 +53,12 @@ func (s *Server) postSignup(w http.ResponseWriter, r *http.Request, ps httproute
 			http.StatusUnprocessableEntity)
 		return
 	}
-	switch err {
-	case store.ErrBadCredentials, store.ErrDuplicate:
+	if errors.Is(err, store.ErrBadCredentials) || errors.Is(err, store.ErrDuplicate) {
 		reqLogf(r, err.Error())
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
-	case nil:
-		// OK
-	default:
+	}
+	if err != nil {
 		reqFatalf(w, r, err, "failed to %v", r.Form.Get("action"))
 		return
 	}

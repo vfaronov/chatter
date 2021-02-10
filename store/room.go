@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -54,7 +55,7 @@ func (db *DB) CreateRoom(ctx context.Context, room *Room) error {
 func (db *DB) GetRoom(ctx context.Context, id primitive.ObjectID) (*Room, error) {
 	room := &Room{}
 	err := db.rooms.FindOne(ctx, bson.M{"_id": id}).Decode(room)
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, nil
 	}
 	return room, err

@@ -22,7 +22,7 @@ func ConnectDB(ctx context.Context, uri string, stream bool) (*DB, error) {
 	// the database name in another config option, extract it manually.
 	parsedURI, err := url.Parse(uri)
 	if err != nil {
-		return nil, fmt.Errorf("store: bad URI: %q: %v", uri, err)
+		return nil, fmt.Errorf("store: bad URI: %q: %w", uri, err)
 	}
 	dbname := strings.TrimPrefix(parsedURI.Path, "/")
 	if dbname == "" {
@@ -79,8 +79,9 @@ var (
 
 // isDuplicateKey returns true if err indicates a duplicate key error from MongoDB.
 func isDuplicateKey(err error) bool {
-	if err, ok := err.(mongo.WriteException); ok {
-		for _, err := range err.WriteErrors {
+	var werr mongo.WriteException
+	if errors.As(err, &werr) {
+		for _, err := range werr.WriteErrors {
 			if err.Code == 11000 {
 				return true
 			}

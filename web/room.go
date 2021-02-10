@@ -24,7 +24,7 @@ func (s *Server) withRoom(
 			return
 		}
 		room, err := s.db.GetRoom(ctx, id)
-		if err == store.ErrNotFound {
+		if errors.Is(err, store.ErrNotFound) {
 			http.Error(w, "no such room", http.StatusNotFound)
 			return
 		}

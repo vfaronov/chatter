@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -46,7 +47,7 @@ func (db *DB) CreatePost(ctx context.Context, post *Post) error {
 	}
 	err := res.Decode(&room)
 	switch {
-	case err == mongo.ErrNoDocuments:
+	case errors.Is(err, mongo.ErrNoDocuments):
 		return ErrNotFound
 	case err != nil:
 		return err

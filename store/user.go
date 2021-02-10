@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -28,7 +29,7 @@ func (db *DB) CreateUser(ctx context.Context, user *User) error {
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password),
 		bcrypt.DefaultCost)
 	if err != nil {
-		return fmt.Errorf("store: cannot generate password hash: %v", err)
+		return fmt.Errorf("store: cannot generate password hash: %w", err)
 	}
 	user.PasswordHash = string(hash)
 	res, err := db.users.InsertOne(ctx, user)
@@ -48,7 +49,7 @@ func (db *DB) CreateUser(ctx context.Context, user *User) error {
 // If the credentials don't match, Authenticate returns ErrBadCredentials.
 func (db *DB) Authenticate(ctx context.Context, user *User) error {
 	err := db.users.FindOne(ctx, bson.M{"name": user.Name}).Decode(user)
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return ErrBadCredentials
 	}
 	if err != nil {

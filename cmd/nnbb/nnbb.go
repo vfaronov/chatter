@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"log"
 	"math/rand"
@@ -44,7 +45,7 @@ func main() {
 
 func runServer(svr *web.Server) {
 	log.Printf("starting server on %v", svr.Addr)
-	if err := svr.ListenAndServe(); err != http.ErrServerClosed {
+	if err := svr.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 		log.Fatalf("server quit: %v", err)
 	}
 }
