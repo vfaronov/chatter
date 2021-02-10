@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"io/fs"
 	"net/http"
+	"net/url"
 
 	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
@@ -62,25 +63,24 @@ func withForm(next http.Handler) http.Handler {
 
 func (s *Server) renderPage(
 	w http.ResponseWriter, r *http.Request,
-	tpl *template.Template, keyval ...interface{},
+	tpl *template.Template, payload interface{},
 ) {
-	s.renderFragment(w, r, tpl, "", keyval...)
+	s.renderFragment(w, r, tpl, "", payload)
 }
 
 func (s *Server) renderFragment(
 	w http.ResponseWriter, r *http.Request,
-	// TODO: replace keyval with nested map[string]interface{}
-	tpl *template.Template, name string, keyval ...interface{},
+	tpl *template.Template, name string, payload interface{},
 ) {
 	userName, _ := s.userName(r) // may be empty
-	data := map[string]interface{}{
-		"User": userName,
-		"URL":  r.URL,
-	}
-	for i := 0; i < len(keyval); i += 2 {
-		key := keyval[i].(string)
-		val := keyval[i+1]
-		data[key] = val
+	data := struct {
+		User string
+		URL  *url.URL
+		P    interface{}
+	}{
+		User: userName,
+		URL:  r.URL,
+		P:    payload,
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	var err error

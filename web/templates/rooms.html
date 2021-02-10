@@ -1,6 +1,6 @@
 {{define "body"}}
 <ul class=rooms>
-  {{range .Rooms}}
+  {{range .P.Rooms}}
   <li>
     <a href="{{.ID.Hex}}/">{{.Title}}</a>
     {{.Serial}} post{{if ne .Serial 1}}s{{end}},

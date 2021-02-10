@@ -15,7 +15,7 @@ func (s *Server) getRooms(w http.ResponseWriter, r *http.Request, ps httprouter.
 		reqFatalf(w, r, err, "failed to get rooms")
 		return
 	}
-	s.renderPage(w, r, roomsTpl, "Rooms", rooms)
+	s.renderPage(w, r, roomsTpl, struct{ Rooms []*store.Room }{rooms})
 }
 
 func (s *Server) postRooms(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

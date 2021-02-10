@@ -26,7 +26,7 @@ func (s *Server) userName(r *http.Request) (string, bool) {
 }
 
 func (s *Server) getSignup(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	s.renderPage(w, r, signupTpl, "Redir", r.Form.Get("redir"))
+	s.renderPage(w, r, signupTpl, struct{ Redir string }{r.Form.Get("redir")})
 }
 
 func (s *Server) postSignup(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

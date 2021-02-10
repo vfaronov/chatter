@@ -40,6 +40,13 @@ func (s *Server) withRoom(
 	}
 }
 
+type roomPayload struct {
+	Room                 *store.Room
+	Posts                []*store.Post
+	FirstPost, LastPost  *store.Post
+	Preceding, Following uint64
+}
+
 func (s *Server) getRoom(w http.ResponseWriter, r *http.Request, room *store.Room) {
 	var err error
 	var before, since uint64
@@ -75,36 +82,30 @@ func (s *Server) getRoom(w http.ResponseWriter, r *http.Request, room *store.Roo
 	}
 
 	fragment := isXHR(r)
-	keyval := []interface{}{
-		"Room", room,
-		"Posts", posts,
+	payload := roomPayload{
+		Room:  room,
+		Posts: posts,
 	}
 	if len(posts) > 0 {
-		firstPost := posts[0]
-		lastPost := posts[len(posts)-1]
-		preceding := firstPost.Serial - 1
-		following := room.Serial - lastPost.Serial
+		payload.FirstPost = posts[0]
+		payload.LastPost = posts[len(posts)-1]
+		payload.Preceding = payload.FirstPost.Serial - 1
+		payload.Following = room.Serial - payload.LastPost.Serial
 		if fragment {
 			// When we interactively replace the "older posts" fragment
 			// of the page, it shouldn't contain the "newer posts" link,
 			// and vice-versa.
 			if before > 0 {
-				following = 0
+				payload.Following = 0
 			} else {
-				preceding = 0
+				payload.Preceding = 0
 			}
 		}
-		keyval = append(keyval,
-			"FirstPost", firstPost,
-			"LastPost", lastPost,
-			"Preceding", preceding,
-			"Following", following,
-		)
 	}
 	if fragment {
-		s.renderFragment(w, r, roomTpl, "posts", keyval...)
+		s.renderFragment(w, r, roomTpl, "posts", payload)
 	} else {
-		s.renderPage(w, r, roomTpl, keyval...)
+		s.renderPage(w, r, roomTpl, payload)
 	}
 }
 
@@ -130,7 +131,7 @@ func (s *Server) postRoom(w http.ResponseWriter, r *http.Request, room *store.Ro
 	}
 
 	if isXHR(r) {
-		s.renderFragment(w, r, roomTpl, "postform")
+		s.renderFragment(w, r, roomTpl, "postform", roomPayload{})
 	} else {
 		http.Redirect(w, r, r.URL.String(), http.StatusSeeOther)
 	}

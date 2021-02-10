@@ -1,23 +1,24 @@
-{{define "title"}}{{.Room.Title}}{{end}}
+{{define "title"}}{{.P.Room.Title}}{{end}}
 
 {{define "nav"}}
 <nav><a href="../">← all rooms</a></nav>
 {{end}}
 
 {{define "body"}}
-<div {{if not .Following}}ic-sse-src="updates/?since={{.LastPost.Serial}}" ic-swap-style="append"{{end}}>
+<div {{if not .P.Following}}ic-sse-src="updates/?since={{.P.LastPost.Serial}}"
+     ic-swap-style="append"{{end}}>
   {{block "posts" . -}}
 
-  {{if .Preceding -}}
+  {{if .P.Preceding -}}
   <div class="post placeholder" id=older ic-enhance=true>
-    <a href="?before={{.FirstPost.Serial}}"
+    <a href="?before={{.P.FirstPost.Serial}}"
        ic-target="#older" ic-replace-target=true ic-push-url=false
        >...older posts...</a>
-    ({{.Preceding}} total)
+    ({{.P.Preceding}} total)
   </div>
   {{- end}}
 
-  {{range .Posts -}}
+  {{range .P.Posts -}}
   {{block "post" . -}}
   {{- /* TODO: use named Type* constants from store */ -}}
   <div class="post {{if .Type}}special{{else}}normal{{end}}" id=post{{.Serial}}>
@@ -33,12 +34,12 @@
   {{- end}}
   {{- end}}
 
-  {{if .Following -}}
+  {{if .P.Following -}}
   <div class="post placeholder" id=newer ic-enhance=true>
-    <a href="?since={{.LastPost.Serial}}"
+    <a href="?since={{.P.LastPost.Serial}}"
        ic-target="#newer" ic-replace-target=true ic-push-url=false
        >...newer posts...</a>
-    ({{.Following}} total)
+    ({{.P.Following}} total)
   </div>
   {{- end}}
 
@@ -48,7 +49,7 @@
 {{block "postform" . -}}
 <form id=newpost class=post method=post
       ic-post-to="." ic-replace-target=true>
-  {{if .Following -}}
+  {{if .P.Following -}}
   <div><a href=".">Go to latest discussion</a></div>
   {{- else if eq .User "" -}}
   <div><a href="/signup/?redir={{.URL}}">Log in or sign up</a>
