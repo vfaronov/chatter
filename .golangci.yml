@@ -1,9 +1,22 @@
 linters:
   enable:
+    - bodyclose
     - gocritic
     - goimports
     - gosec
+    - errorlint
+    - exhaustive
+    - makezero
     - misspell
+    - nolintlint
+    - prealloc
+    - predeclared
+    - scopelint
+    - thelper
+    - tparallel
+    - unconvert
+    - unparam
+    - whitespace
 
 issues:
   exclude-rules:
@@ -11,3 +24,13 @@ issues:
         - gosec
       # Use of weak random number generator (math/rand instead of crypto/rand)
       text: "G404:"
+    - path: _test\.go
+      linters:
+        - errcheck
+        - scopelint
+
+linters-settings:
+  errorlint:
+    errorf: true
+  exhaustive:
+    default-signifies-exhaustive: true
