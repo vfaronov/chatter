@@ -33,10 +33,6 @@ ul.rooms > li {
     max-width: 100%;
 }
 
-.post.special {
-    background-color: #fff0f9;
-}
-
 .post:target {
     border: solid 1px #333333;
 }

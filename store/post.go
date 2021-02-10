@@ -15,19 +15,10 @@ type Post struct {
 	ID     primitive.ObjectID `bson:"_id,omitempty"`
 	RoomID primitive.ObjectID `bson:"roomId"`
 	Serial uint64
-	Type   PostType
 	Author string
 	Time   time.Time
 	Text   string
 }
-
-type PostType uint8
-
-// TODO: use golang.org/x/tools/cmd/stringer?
-const (
-	TypeNormal PostType = iota
-	TypeNewRoom
-)
 
 func (db *DB) CreatePost(ctx context.Context, post *Post) error {
 	// Update the room to ensure that it exists, bump its update timestamp,
