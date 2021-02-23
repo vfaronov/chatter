@@ -11,14 +11,14 @@ import (
 )
 
 func main() {
-	var (
-		initDB     bool
-		insertFake int
-	)
+	config.WithStoreURI()
+	config.WithFakeData()
+	var initDB bool
 	flag.BoolVar(&initDB, "init-db", false,
 		"initialize collections and indices in the database")
+	var insertFake int
 	flag.IntVar(&insertFake, "insert-fake", 0,
-		"insert fake data into the database with the given amount factor "+
+		"insert fake data into the database with amount `FACTOR` "+
 			"(100 is good for development)")
 	flag.Parse()
 
@@ -35,7 +35,11 @@ func main() {
 		}
 	}
 	if insertFake > 0 {
-		if err := store.InsertFake(ctx, db, insertFake); err != nil {
+		faker, err := store.NewFaker(config.FakeData)
+		if err != nil {
+			log.Fatalf("failed to load fake data: %v", err)
+		}
+		if err := faker.Insert(ctx, db, insertFake); err != nil {
 			log.Fatalf("failed to insert fake data: %v", err)
 		}
 	}

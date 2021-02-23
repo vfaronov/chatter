@@ -20,13 +20,13 @@ import (
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
-	var (
-		webAddr string
-		key     string
-	)
+	config.WithStoreURI()
+	var webAddr string
 	flag.StringVar(&webAddr, "web-addr", "localhost:10242",
 		"address for the Web server to listen on")
-	flag.StringVar(&key, "key", "", "secret key for cookie signing")
+	var key string
+	flag.StringVar(&key, "key", "",
+		"secret key for cookie signing")
 	flag.Parse()
 
 	if key == "" {

@@ -2,8 +2,12 @@ package store
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"io"
 	"log"
 	"math/rand"
+	"os"
 	"strings"
 	"time"
 
@@ -12,23 +16,75 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// InsertFake generates and inserts fake data into db, spanning some recent
+// Faker produces fake test data. A zero Faker is ready to generate random texts.
+// To use real texts instead, see func NewFaker.
+type Faker struct {
+	names  []string
+	titles []string
+	texts  []string
+}
+
+// NewFaker returns a Faker that produces data from the given file path.
+// If path is empty, returns a zero Faker.
+//
+// The file at path must contain a stream of JSON objects,
+// each object containing one or more of the fields "author", "topic", "text".
+// Example file:
+//
+//	{"topic": "Let's discuss something"}
+//	{"author": "Vasiliy", "text": "This is a great idea!"}
+//	{"author": "admin"}
+//
+func NewFaker(path string) (Faker, error) {
+	var fk Faker
+	if path == "" {
+		return fk, nil
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		return fk, err
+	}
+	defer f.Close()
+	dec := json.NewDecoder(f)
+	for {
+		var entry struct{ Author, Topic, Text string }
+		if err := dec.Decode(&entry); errors.Is(err, io.EOF) {
+			break
+		} else if err != nil {
+			return fk, err
+		}
+		if entry.Author != "" {
+			fk.names = append(fk.names, entry.Author)
+		}
+		if entry.Topic != "" {
+			fk.titles = append(fk.titles, entry.Topic)
+		}
+		if entry.Text != "" {
+			fk.texts = append(fk.texts, entry.Text)
+		}
+	}
+	log.Printf("loaded Faker with %d names, %d titles, %d texts",
+		len(fk.names), len(fk.titles), len(fk.texts))
+	return fk, nil
+}
+
+// Insert generates and inserts fake data into db, spanning some recent
 // time range. Exactly factor rooms will be created; the number of posts
 // and the length of the time range also increases with factor.
-func InsertFake(ctx context.Context, db *DB, factor int) error {
+func (fk Faker) Insert(ctx context.Context, db *DB, factor int) error {
 	// TODO: fake users
 	for i := 0; i < factor; i++ {
-		if err := insertFakeRoom(ctx, db, factor); err != nil {
+		if err := fk.insertFakeRoom(ctx, db, factor); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func insertFakeRoom(ctx context.Context, db *DB, factor int) error {
+func (fk Faker) insertFakeRoom(ctx context.Context, db *DB, factor int) error {
 	room := &Room{
-		Title:  FakeRoomTitle(),
-		Author: FakeUserName(),
+		Title:  fk.RoomTitle(),
+		Author: fk.UserName(),
 	}
 	if err := db.CreateRoom(ctx, room); err != nil {
 		return err
@@ -57,8 +113,8 @@ func insertFakeRoom(ctx context.Context, db *DB, factor int) error {
 			break
 		}
 		post.Serial++
-		post.Author = FakeUserName()
-		post.Text = FakePostText()
+		post.Author = fk.UserName()
+		post.Text = fk.PostText()
 		_, err := db.posts.InsertOne(ctx, post)
 		if err != nil {
 			return err
@@ -78,11 +134,17 @@ func insertFakeRoom(ctx context.Context, db *DB, factor int) error {
 	return nil
 }
 
-func FakeUserName() string {
+func (fk Faker) UserName() string {
+	if len(fk.names) > 0 {
+		return oneOf(fk.names...)
+	}
 	return oneOf(gofakeit.Username(), gofakeit.Name())
 }
 
-func FakeRoomTitle() string {
+func (fk Faker) RoomTitle() string {
+	if len(fk.titles) > 0 {
+		return oneOf(fk.titles...)
+	}
 	return strings.TrimSuffix(oneOf(
 		gofakeit.Word(),
 		gofakeit.Sentence(1+rand.Intn(5)),
@@ -90,7 +152,10 @@ func FakeRoomTitle() string {
 	), ".")
 }
 
-func FakePostText() string {
+func (fk Faker) PostText() string {
+	if len(fk.texts) > 0 {
+		return oneOf(fk.texts...)
+	}
 	return oneOf(
 		gofakeit.Paragraph(1, 1+rand.Intn(5), 1+rand.Intn(10), ""),
 		gofakeit.Sentence(1+rand.Intn(5)),

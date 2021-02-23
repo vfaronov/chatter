@@ -10,22 +10,25 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/vfaronov/nnbb/config"
+	"github.com/vfaronov/nnbb/store"
 	"github.com/vfaronov/nnbb/testbot"
 )
 
 func main() {
-	var (
-		entryURL string
-		n        int
-		rate     float64
-		seed     int64
-	)
+	config.WithFakeData()
+	var entryURL string
 	flag.StringVar(&entryURL, "entry-url", "http://localhost:10242/signup/",
 		"URL of the signup page of the nnBB instance to test")
-	flag.IntVar(&n, "n", 100, "number of concurrent users to simulate")
+	var n int
+	flag.IntVar(&n, "n", 100,
+		"number of concurrent users to simulate")
+	var rate float64
 	flag.Float64Var(&rate, "rate", 1.0,
 		"speedup (> 1) / slowdown factor for each user")
-	flag.Int64Var(&seed, "seed", 0, "random seed (0 to use current time)")
+	var seed int64
+	flag.Int64Var(&seed, "seed", 0,
+		"random seed (0 to use current time)")
 	flag.Parse()
 
 	if seed == 0 {
@@ -34,7 +37,12 @@ func main() {
 		rand.Seed(seed)
 	}
 
-	herd := testbot.NewHerd(entryURL, n, rate)
+	faker, err := store.NewFaker(config.FakeData)
+	if err != nil {
+		log.Fatalf("failed to load fake data: %v", faker)
+	}
+
+	herd := testbot.NewHerd(faker, entryURL, n, rate)
 	log.Print("starting bot herd")
 	go herd.Run()
 	ch := make(chan os.Signal, 1)

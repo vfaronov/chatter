@@ -25,6 +25,7 @@ import (
 
 // Herd is a group of bots acting concurrently.
 type Herd struct {
+	faker     store.Faker
 	signupURL string
 	n         int
 	rate      float64
@@ -33,8 +34,8 @@ type Herd struct {
 // NewHerd returns an initialized Herd of n bots that will start at signupURL
 // and proceed with further actions at the given relative rate (1.0 for "normal"
 // rate as hardcoded into the bot).
-func NewHerd(signupURL string, n int, rate float64) *Herd {
-	return &Herd{signupURL, n, rate}
+func NewHerd(faker store.Faker, signupURL string, n int, rate float64) *Herd {
+	return &Herd{faker, signupURL, n, rate}
 }
 
 // Run executes the behavior of the Herd. This method never returns;
@@ -61,7 +62,7 @@ func newBot(h *Herd, i int) *bot {
 	return &bot{
 		herd:     h,
 		i:        i,
-		name:     fmt.Sprintf("%v bot#%v", store.FakeUserName(), i),
+		name:     fmt.Sprintf("%v bot#%v", h.faker.UserName(), i),
 		password: "12345",
 		signedUp: false,
 		browser:  browser,
@@ -147,7 +148,7 @@ func (b *bot) rooms() {
 	b.checkPage()
 	links := b.browser.Links()
 	if rand.Intn(5) == 0 || len(links) == 0 {
-		title := store.FakeRoomTitle()
+		title := b.herd.faker.RoomTitle()
 		b.logf("creating a new room: %q", title)
 		form, err := b.browser.Form("#newroom")
 		b.must("find form", err)
@@ -196,7 +197,7 @@ func (b *bot) room() {
 				b.must("browse", b.browser.Click("nav a"))
 				return
 			}
-			mark, text := generatePost()
+			mark, text := b.generatePost()
 			b.logf("posting %q", mark)
 			form, err := b.browser.Form("#newpost")
 			b.must("find form", err)
@@ -337,11 +338,11 @@ func pickLink(links []*browser.Link) *browser.Link {
 	return nil
 }
 
-func generatePost() (mark, text string) {
+func (b *bot) generatePost() (mark, text string) {
 	// Mark each post with a unique string that will be easy to find in HTML later.
-	b := make([]byte, 6)
-	rand.Read(b)
-	mark = fmt.Sprintf("$%x", b)
-	text = fmt.Sprintf("%s %s", store.FakePostText(), mark)
+	buf := make([]byte, 6)
+	rand.Read(buf)
+	mark = fmt.Sprintf("$%x", buf)
+	text = fmt.Sprintf("%s %s", b.herd.faker.PostText(), mark)
 	return
 }
