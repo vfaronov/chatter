@@ -248,11 +248,13 @@ func (b *bot) streamUpdates(ctx context.Context, ch chan<- string, req *http.Req
 			req.Header.Set("Last-Event-Id", lastID)
 		}
 		resp, err := http.DefaultClient.Do(req.WithContext(ctx))
-		if err != nil && ctx.Err() != nil {
-			b.logf("stream aborted because already browsed away: %v", err)
-			return
+		if err != nil {
+			if ctx.Err() != nil {
+				b.logf("stream aborted because already browsed away: %v", err)
+				return
+			}
+			b.panicf("failed to get response: %v", err)
 		}
-		b.must("get response", err)
 		if resp.StatusCode != http.StatusOK {
 			resp.Body.Close()
 			b.panicf("expected 200 OK, got %v", resp.Status)
