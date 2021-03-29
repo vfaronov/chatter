@@ -47,7 +47,6 @@ See also `-help` for each command.
 * metrics
 * CSRF protection
 * paging in room list
-* Markdown support
 * changing room title
 * deleting posts
 * search

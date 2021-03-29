@@ -48,6 +48,12 @@ ul.rooms > li {
     max-width: 100%;
 }
 
+.post blockquote {
+    margin-left: 0.2em;
+    padding-left: 0.5em;
+    border-left: solid 0.2em #6b7f9c;
+}
+
 .author {
     font-weight: bold;
 }

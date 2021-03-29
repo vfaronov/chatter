@@ -33,7 +33,7 @@
             {{- /* TODO: nicer time rendering, timezone-aware */ -}}
             {{.Time.Format "2006 Jan 2 15:04"}}
           </a>
-          <p>{{.Text}}</p>
+          <p>{{markdown .Text}}</p>
         </div>
       {{end}}
     {{end}}
