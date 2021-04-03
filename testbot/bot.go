@@ -59,6 +59,7 @@ type bot struct {
 func newBot(h *Herd, i int) *bot {
 	browser := surf.NewBrowser()
 	browser.SetUserAgent("testbot")
+	browser.SetHistoryJar(NullHistory{}) // the default jar.MemoryHistory grows unbounded
 	return &bot{
 		herd:     h,
 		i:        i,
