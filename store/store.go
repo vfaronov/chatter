@@ -76,16 +76,3 @@ var (
 	ErrDuplicate      = errors.New("duplicate")
 	ErrBadCredentials = errors.New("bad credentials")
 )
-
-// isDuplicateKey returns true if err indicates a duplicate key error from MongoDB.
-func isDuplicateKey(err error) bool {
-	var werr mongo.WriteException
-	if errors.As(err, &werr) {
-		for _, err := range werr.WriteErrors {
-			if err.Code == 11000 {
-				return true
-			}
-		}
-	}
-	return false
-}

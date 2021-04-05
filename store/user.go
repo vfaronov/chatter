@@ -34,7 +34,7 @@ func (db *DB) CreateUser(ctx context.Context, user *User) error {
 	user.PasswordHash = string(hash)
 	res, err := db.users.InsertOne(ctx, user)
 	if err != nil {
-		if isDuplicateKey(err) {
+		if mongo.IsDuplicateKeyError(err) {
 			return ErrDuplicate
 		}
 		return err
